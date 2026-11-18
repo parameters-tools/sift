@@ -1,0 +1,15 @@
+services:
+  docling-serve:
+    image: quay.io/docling-project/docling-serve:latest
+    container_name: docling-serve
+    ports:
+      - "127.0.0.1:5001:5001"
+    environment:
+      - DOCLING_SERVE_ENABLE_UI=true
+      - DOCLING_SERVE_MAX_SYNC_WAIT=300
+    volumes:
+      - docling-models:/opt/app-root/src/.cache/docling
+    restart: unless-stopped
+
+volumes:
+  docling-models:

@@ -165,6 +165,44 @@ cargo test -p generator --test e2e_pipeline_tests
 
 ---
 
+## Evaluation & Benchmark Results
+
+Sift has been rigorously evaluated using industry-standard RAG evaluation frameworks (**Ragas**, **ARES**, and **TruLens**) across a 25-case benchmark spanning academic reports, technical documentation, resumes, and adversarial out-of-domain probes.
+
+For the complete in-depth analysis, methodology, and qualitative case studies, see [EVALUATION_REPORT.md](EVALUATION_REPORT.md).
+
+### Summary Scorecard
+
+| Metric | Measured Score | Target | Framework Formulation |
+| :--- | :---: | :---: | :--- |
+| **Hit Rate @ 1** | **100.0%** | $\ge 85.0\%$ | Exact expected source match at Rank 1 |
+| **Hit Rate @ 3** | **100.0%** | $\ge 92.0\%$ | Relevant chunk in top-3 retrieval |
+| **Mean Reciprocal Rank (MRR)** | **1.000** | $\ge 0.850$ | Average reciprocal rank of first relevant chunk |
+| **Citation Recall** | **100.0%** | $\ge 90.0\%$ | Proportion of factual claims backed by citations |
+| **Citation Precision** | **97.3%** | $\ge 95.0\%$ | In-text citations correctly referencing source chunks |
+| **Faithfulness (Groundedness)** | **92.8%** | $\ge 90.0\%$ | Ragas groundedness verified via LLM judge |
+| **Answer Relevance** | **92.8%** | $\ge 90.0\%$ | Direct semantic alignment with user prompt |
+| **Semantic Accuracy** | **84.5%** | $\ge 80.0\%$ | Factual agreement against reference ground truth |
+| **Adversarial / Negative Rejection** | **100.0%** | $\ge 95.0\%$ | Hallucination suppression on ungrounded queries |
+| **Quantitative / Math Accuracy** | **100.0%** | $\ge 95.0\%$ | Exact precision on numerical & percentage reasoning |
+| **p50 Latency (Wall-clock)** | **1.99s** | $< 3.00s$ | Median end-to-end turnaround time |
+| **Mean Latency** | **2.83s** | $< 4.00s$ | Average turnaround across all test queries |
+
+### Running the Evaluation Suite
+
+```bash
+# 1. Build the release binary
+cargo build --release
+
+# 2. Run the evaluation engine
+source eval/.venv/bin/activate
+python eval/evaluator.py
+```
+
+Raw per-query outputs, citations, and LLM judge traces are logged in `eval/results.json`.
+
+---
+
 ## License
 
 This project is licensed under the MIT License.

@@ -13,7 +13,11 @@
 *.sqlite3
 *.db
 
-# OS / Editor metadata
+# Python & Eval artifacts
+.venv/
+eval/.venv/
+**/__pycache__/
+*.pyc
 .DS_Store
 Thumbs.db
 .idea/

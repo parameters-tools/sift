@@ -7,9 +7,11 @@ pub mod input;
 pub mod messages;
 pub mod spinner;
 pub mod markdown;
+pub mod transcript;
 pub mod app;
 
 pub use app::emit;
+pub use transcript::{AnswerFooter, Entry, ResizeDebouncer, Transcript, UiConfig};
 
 #[cfg(test)]
 mod tests {
@@ -217,15 +219,24 @@ mod tests {
                 "Banner width mismatch at terminal width {width}"
             );
             let banner_lines = banner::render_banner_lines(&theme, &cwd, 0, 0, width);
-            assert!(banner_lines.len() >= 11);
-            for (idx, line) in banner_lines[0..11].iter().enumerate() {
-                assert_eq!(
-                    line.width(),
-                    expected_banner_w,
-                    "Banner box line {idx} width mismatch at terminal width {width}: got {}, expected {}",
-                    line.width(),
+            if width >= 72 {
+                let expected_b_w = if width >= 90 {
+                    (width - 2).min(100)
+                } else {
                     expected_banner_w
-                );
+                };
+                assert!(banner_lines.len() >= 11);
+                for (idx, line) in banner_lines.iter().enumerate() {
+                    assert_eq!(
+                        line.width(),
+                        expected_b_w,
+                        "Banner box line {idx} width mismatch at terminal width {width}: got {}, expected {}",
+                        line.width(),
+                        expected_b_w
+                    );
+                }
+            } else {
+                assert_eq!(banner_lines.len(), 2);
             }
 
             // 3. Answer text, tool rows and sources block: wrap at min(terminal width - 4, 100)

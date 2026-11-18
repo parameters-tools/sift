@@ -26,3 +26,7 @@ uuid.workspace = true
 shared = { path = "../shared" }
 indexer = { path = "../indexer" }
 textwrap.workspace = true
+
+[dev-dependencies]
+portable-pty = "0.9.0"
+vt100 = "=0.15.2"

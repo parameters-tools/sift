@@ -30,7 +30,7 @@ use super::{
     messages::MessageFormatter,
     spinner::SpinnerState,
     theme::Theme,
-    banner::render_banner_lines,
+    transcript::{AnswerFooter, Entry, ResizeDebouncer, Transcript, UiConfig},
 };
 
 pub type QueryDebugList = Vec<(usize, String, f32)>;
@@ -188,6 +188,19 @@ pub fn emit<B: ratatui::backend::Backend>(
             }
         }
     })
+}
+
+pub fn emit_entry<B: ratatui::backend::Backend>(
+    terminal: &mut Terminal<B>,
+    transcript: &mut Transcript,
+    entry: Entry,
+    term_width: u16,
+    theme: &Theme,
+) -> io::Result<()> {
+    let lines = entry.render_with_theme(term_width as usize, theme);
+    emit(terminal, lines, term_width)?;
+    transcript.push(entry);
+    Ok(())
 }
 
 pub fn handle_model_subcommand(
@@ -466,6 +479,11 @@ pub async fn run(db_path: &Path) -> Result<()> {
     let mut menu_selected = 0usize;
     let mut is_busy = false;
 
+    let mut transcript = Transcript::new();
+    let ui_config = UiConfig::default();
+    let mut debouncer = ResizeDebouncer::new(Duration::from_millis(ui_config.resize_debounce_ms));
+    let mut streaming_text = String::new();
+
     enable_raw_mode()?;
     let stdout = std::io::stdout();
     let backend = CrosstermBackend::new(stdout);
@@ -477,19 +495,19 @@ pub async fn run(db_path: &Path) -> Result<()> {
         },
     )?;
 
-    // Emit banner box and tips through ui::emit into scrollback at startup
+    // Emit banner box through emit_entry into transcript and scrollback at startup
     let current_width = terminal.size().map(|s| s.width).unwrap_or(80);
-    let welcome = render_banner_lines(&theme, &cwd, status.sources, status.chunks, current_width as usize);
-    emit(&mut terminal, welcome, current_width)?;
+    let banner = Entry::banner(cwd.clone(), status.sources, status.chunks);
+    emit_entry(&mut terminal, &mut transcript, banner, current_width, &theme)?;
 
     let mut cancel_token: Option<CancellationToken> = None;
-    let mut turns_completed = 0usize;
 
     loop {
         // Drain any incoming background UI events
         while let Ok(event) = ui_rx.try_recv() {
             match event {
-                UiEvent::Token(_token) => {
+                UiEvent::Token(token) => {
+                    streaming_text.push_str(&token);
                     spinner.add_tokens(1);
                 }
                 UiEvent::HealthResult(ok) => {
@@ -501,81 +519,63 @@ pub async fn run(db_path: &Path) -> Result<()> {
                     result,
                 } => {
                     is_busy = false;
+                    streaming_text.clear();
                     cancel_token = None;
                     let current_width = terminal.size().map(|s| s.width).unwrap_or(80);
-                    let content_width = MessageFormatter::compute_content_width(current_width as usize);
                     match result {
                         Ok(success) => {
                             status.last_query_debug =
                                 Some((retrieved_query.clone(), success.sources.clone()));
                             status.last_retrieval = Some(success.retrieved_chunks.clone());
                             if success.agent_steps.is_empty() {
-                                let tool_row = MessageFormatter::render_retrieve_tool_done_wrapped(
+                                let tool_entry = Entry::tool_retrieve(
                                     &user_query,
                                     &retrieved_query,
                                     &success.tool_detail,
                                     success.is_weak,
                                     success.no_strong_match,
-                                    &theme,
-                                    content_width,
                                 );
-                                emit(&mut terminal, tool_row, current_width)?;
+                                emit_entry(&mut terminal, &mut transcript, tool_entry, current_width, &theme)?;
                             } else {
-                                let rendered_steps = MessageFormatter::render_agent_steps(
+                                let tool_entry = Entry::tool_agent_steps(
                                     &user_query,
                                     &retrieved_query,
-                                    &success.agent_steps,
-                                    &theme,
-                                    content_width,
+                                    success.agent_steps,
                                 );
-                                emit(&mut terminal, rendered_steps, current_width)?;
+                                emit_entry(&mut terminal, &mut transcript, tool_entry, current_width, &theme)?;
                             }
 
-                            // Blank line between tool row and assistant answer
-                            emit(&mut terminal, vec![Line::default()], current_width)?;
-
-                            let assistant_row = MessageFormatter::render_assistant_answer(
+                            let answer_entry = Entry::answer(
                                 &success.answer,
-                                &success.sources,
-                                &theme,
-                                content_width,
+                                success.sources.clone(),
+                                AnswerFooter::new(
+                                    success.answer_elapsed,
+                                    success.token_count,
+                                    success.is_approx_tokens,
+                                    &success.chat_model,
+                                ),
                             );
-                            emit(&mut terminal, assistant_row, current_width)?;
-
-                            // Blank line between assistant answer and footer
-                            emit(&mut terminal, vec![Line::default()], current_width)?;
-
-                            let footer = MessageFormatter::render_answer_footer(
-                                success.answer_elapsed,
-                                success.token_count,
-                                success.is_approx_tokens,
-                                &success.chat_model,
-                                &theme,
-                            );
-                            emit(&mut terminal, footer, current_width)?;
+                            emit_entry(&mut terminal, &mut transcript, answer_entry, current_width, &theme)?;
 
                             memory.add_turn(user_query.clone(), success.answer);
-                            turns_completed += 1;
                         }
                         Err(e) => {
                             if e.to_string().contains("Interrupted") {
-                                let interrupted = MessageFormatter::render_interrupted(&theme);
-                                emit(&mut terminal, interrupted, current_width)?;
+                                let interrupted = Entry::notice("Interrupted");
+                                emit_entry(&mut terminal, &mut transcript, interrupted, current_width, &theme)?;
                             } else {
                                 let args = if user_query.trim() == retrieved_query.trim() {
                                     String::new()
                                 } else {
                                     MessageFormatter::format_tool_args(&retrieved_query)
                                 };
-                                let err_row = MessageFormatter::render_tool_error(
+                                let err_entry = Entry::tool_error(
                                     "Retrieve",
-                                    &args,
-                                    &format!("{e:#}"),
-                                    &theme,
+                                    args,
+                                    format!("{e:#}"),
                                 );
-                                emit(&mut terminal, err_row, current_width)?;
+                                emit_entry(&mut terminal, &mut transcript, err_entry, current_width, &theme)?;
                             }
-                            turns_completed += 1;
                         }
                     }
                 }
@@ -584,7 +584,6 @@ pub async fn run(db_path: &Path) -> Result<()> {
                     cancel_token = None;
                     status.refresh(&conn);
                     let current_width = terminal.size().map(|s| s.width).unwrap_or(80);
-                    let content_width = MessageFormatter::compute_content_width(current_width as usize);
                     match result {
                         Ok((indexed_chunks, indexed_files, elapsed)) => {
                             let detail = MessageFormatter::format_index_done(
@@ -592,28 +591,20 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                 indexed_files,
                                 elapsed as f64,
                             );
-                            let msg = MessageFormatter::render_tool_done_wrapped(
-                                "Index",
-                                &format!("\"{path}\""),
-                                &detail,
-                                &theme,
-                                content_width,
-                            );
-                            emit(&mut terminal, msg, current_width)?;
-                            turns_completed += 1;
+                            let index_entry = Entry::tool_index(&path, detail);
+                            emit_entry(&mut terminal, &mut transcript, index_entry, current_width, &theme)?;
                         }
                         Err(e) => {
                             if e.to_string().contains("Interrupted") {
-                                let interrupted = MessageFormatter::render_interrupted(&theme);
-                                emit(&mut terminal, interrupted, current_width)?;
+                                let interrupted = Entry::notice("Interrupted");
+                                emit_entry(&mut terminal, &mut transcript, interrupted, current_width, &theme)?;
                             } else {
-                                let err = MessageFormatter::render_tool_error(
+                                let err_entry = Entry::tool_error(
                                     "Index",
-                                    &format!("\"{path}\""),
-                                    &format!("{e:#}"),
-                                    &theme,
+                                    format!("\"{path}\""),
+                                    format!("{e:#}"),
                                 );
-                                emit(&mut terminal, err, current_width)?;
+                                emit_entry(&mut terminal, &mut transcript, err_entry, current_width, &theme)?;
                             }
                         }
                     }
@@ -657,155 +648,159 @@ pub async fn run(db_path: &Path) -> Result<()> {
         let num_lines = input.text.split('\n').count().max(1);
         let input_box_height = ((num_lines + 2) as u16).clamp(3, 8);
 
-        terminal.draw(|f| {
-            let area = f.area();
-            if area.height == 0 || area.width == 0 {
-                return;
+        // Settle resize debounce if ready
+        if let Some((target_cols, _target_rows)) = debouncer.check_settled(Instant::now()) {
+            if ui_config.clear_scrollback_on_resize {
+                execute!(std::io::stdout(), terminal::Clear(ClearType::Purge))?;
             }
-            f.render_widget(Clear, area);
+            execute!(
+                std::io::stdout(),
+                terminal::Clear(ClearType::All),
+                cursor::MoveTo(0, 0)
+            )?;
+            std::io::stdout().flush()?;
 
-            let term_width = area.width as usize;
-            let is_compact = term_width < 60;
+            drop(terminal);
+            let backend = CrosstermBackend::new(std::io::stdout());
+            terminal = Terminal::with_options(
+                backend,
+                TerminalOptions {
+                    viewport: Viewport::Inline(viewport_height),
+                },
+            )?;
 
-            // Input box and slash menu: full width, terminal width - 2 (when >= 60)
-            let input_box_width = if is_compact {
-                area.width
-            } else {
-                (area.width.saturating_sub(2)).max(1)
-            };
+            let all_lines = transcript.render_all(target_cols as usize, &theme);
+            emit(&mut terminal, all_lines, target_cols)?;
+        }
 
-            let draw_area = Rect {
-                x: area.x,
-                y: area.y,
-                width: input_box_width,
-                height: area.height,
-            };
+        // Draw live inline viewport only when not debouncing resize
+        if !debouncer.is_pending() {
+            terminal.draw(|f| {
+                let area = f.area();
+                if area.height == 0 || area.width == 0 {
+                    return;
+                }
+                f.render_widget(Clear, area);
 
-            if is_busy {
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Length(1),                // Spinner row
-                        Constraint::Length(input_box_height), // Input box
-                        Constraint::Length(1),                // Footer line
-                        Constraint::Min(0),                   // Remaining space below
-                    ])
-                    .split(draw_area);
+                let term_width = area.width as usize;
+                let is_compact = term_width < 60;
 
-                let spinner_line = spinner.render_ratatui_line(&theme);
-                f.render_widget(Paragraph::new(spinner_line), chunks[0]);
-                render_input_box(f, chunks[1], &mut input, &theme);
-                let footer_line = footer_state.render_ratatui_line(draw_area.width as usize, &theme);
-                f.render_widget(Paragraph::new(footer_line), chunks[2]);
-            } else if menu_active && !filtered_cmds.is_empty() {
-                let menu_len = filtered_cmds.len().min(7) as u16;
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Length(input_box_height), // Input box
-                        Constraint::Length(menu_len),         // Slash menu
-                        Constraint::Length(1),                // Footer line
-                        Constraint::Min(0),                   // Remaining space below
-                    ])
-                    .split(draw_area);
+                // Input box and slash menu: full width, terminal width - 2 (when >= 60)
+                let input_box_width = if is_compact {
+                    area.width
+                } else {
+                    (area.width.saturating_sub(2)).max(1)
+                };
 
-                render_input_box(f, chunks[0], &mut input, &theme);
+                let draw_area = Rect {
+                    x: area.x,
+                    y: area.y,
+                    width: input_box_width,
+                    height: area.height,
+                };
 
-                let items: Vec<ListItem> = filtered_cmds
-                    .iter()
-                    .enumerate()
-                    .map(|(i, cmd)| {
-                        let is_selected = i == menu_selected;
-                        let name_span = if is_selected {
-                            Span::styled(
-                                format!("   {:<12}", cmd.name),
-                                theme.style_accent().add_modifier(Modifier::BOLD),
-                            )
-                        } else {
-                            Span::styled(
-                                format!("   {:<12}", cmd.name),
-                                Style::default().add_modifier(Modifier::BOLD),
-                            )
-                        };
-                        let desc_span = Span::styled(cmd.description, theme.style_muted());
-                        let item = ListItem::new(Line::from(vec![name_span, desc_span]));
-                        if is_selected {
-                            item.style(Style::default().bg(Color::Rgb(40, 40, 40)))
-                        } else {
-                            item
-                        }
-                    })
-                    .collect();
+                if is_busy {
+                    let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints([
+                            Constraint::Length(1),                // Spinner row
+                            Constraint::Length(input_box_height), // Input box
+                            Constraint::Length(1),                // Footer line
+                            Constraint::Min(0),                   // Remaining space below
+                        ])
+                        .split(draw_area);
 
-                let list = List::new(items);
-                f.render_widget(list, chunks[1]);
+                    let spinner_line = spinner.render_ratatui_line(&theme);
+                    f.render_widget(Paragraph::new(spinner_line), chunks[0]);
+                    render_input_box(f, chunks[1], &mut input, &theme);
+                    let footer_line = footer_state.render_ratatui_line(draw_area.width as usize, &theme);
+                    f.render_widget(Paragraph::new(footer_line), chunks[2]);
+                    if chunks.len() > 3 && chunks[3].height > 0 && !streaming_text.is_empty() {
+                        let preview = Line::from(vec![
+                            Span::styled("  ", theme.style_muted()),
+                            Span::styled(&streaming_text, theme.style_muted()),
+                        ]);
+                        f.render_widget(Paragraph::new(preview), chunks[3]);
+                    }
+                } else if menu_active && !filtered_cmds.is_empty() {
+                    let menu_len = filtered_cmds.len().min(7) as u16;
+                    let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints([
+                            Constraint::Length(input_box_height), // Input box
+                            Constraint::Length(menu_len),         // Slash menu
+                            Constraint::Length(1),                // Footer line
+                            Constraint::Min(0),                   // Remaining space below
+                        ])
+                        .split(draw_area);
 
-                let footer_line = footer_state.render_ratatui_line(draw_area.width as usize, &theme);
-                f.render_widget(Paragraph::new(footer_line), chunks[2]);
-            } else {
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Length(input_box_height), // Input box
-                        Constraint::Length(1),                // Footer line
-                        Constraint::Min(0),                   // Remaining space below
-                    ])
-                    .split(draw_area);
+                    render_input_box(f, chunks[0], &mut input, &theme);
 
-                render_input_box(f, chunks[0], &mut input, &theme);
+                    let items: Vec<ListItem> = filtered_cmds
+                        .iter()
+                        .enumerate()
+                        .map(|(i, cmd)| {
+                            let is_selected = i == menu_selected;
+                            let name_span = if is_selected {
+                                Span::styled(
+                                    format!("   {:<12}", cmd.name),
+                                    theme.style_accent().add_modifier(Modifier::BOLD),
+                                )
+                            } else {
+                                Span::styled(
+                                    format!("   {:<12}", cmd.name),
+                                    Style::default().add_modifier(Modifier::BOLD),
+                                )
+                            };
+                            let desc_span = Span::styled(cmd.description, theme.style_muted());
+                            let item = ListItem::new(Line::from(vec![name_span, desc_span]));
+                            if is_selected {
+                                item.style(Style::default().bg(Color::Rgb(40, 40, 40)))
+                            } else {
+                                item
+                            }
+                        })
+                        .collect();
 
-                let footer_line = footer_state.render_ratatui_line(draw_area.width as usize, &theme);
-                f.render_widget(Paragraph::new(footer_line), chunks[1]);
-            }
-        })?;
+                    let list = List::new(items);
+                    f.render_widget(list, chunks[1]);
+
+                    let footer_line = footer_state.render_ratatui_line(draw_area.width as usize, &theme);
+                    f.render_widget(Paragraph::new(footer_line), chunks[2]);
+                } else {
+                    let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints([
+                            Constraint::Length(input_box_height), // Input box
+                            Constraint::Length(1),                // Footer line
+                            Constraint::Min(0),                   // Remaining space below
+                        ])
+                        .split(draw_area);
+
+                    render_input_box(f, chunks[0], &mut input, &theme);
+
+                    let footer_line = footer_state.render_ratatui_line(draw_area.width as usize, &theme);
+                    f.render_widget(Paragraph::new(footer_line), chunks[1]);
+                }
+            })?;
+        }
 
         // Poll for user keyboard input with short timeout to keep spinner animating
-        if event::poll(Duration::from_millis(50))? {
+        let poll_timeout = if let Some(remaining) = debouncer.time_remaining(Instant::now()) {
+            remaining.min(Duration::from_millis(50))
+        } else {
+            Duration::from_millis(50)
+        };
+
+        if event::poll(poll_timeout)? {
             match event::read()? {
-                Event::Resize(_cols, _rows) => {
-                    while event::poll(Duration::from_millis(10))? {
-                        let _ = event::read();
-                    }
-                    let lines: Vec<&str> = input.text.split('\n').collect();
-                    let mut cursor_row = 0;
-                    let mut current_offset = 0;
-                    for (i, line_text) in lines.iter().enumerate() {
-                        let line_len = line_text.chars().count();
-                        if input.cursor >= current_offset && input.cursor <= current_offset + line_len {
-                            cursor_row = i;
+                Event::Resize(cols, rows) => {
+                    debouncer.on_resize(cols, rows, Instant::now());
+                    while event::poll(Duration::from_millis(0))? {
+                        if let Event::Resize(c, r) = event::read()? {
+                            debouncer.on_resize(c, r, Instant::now());
                         }
-                        current_offset += line_len + 1;
                     }
-
-                    let term_size = terminal.size().unwrap_or(ratatui::layout::Size { width: 80, height: 24 });
-                    let is_compact = term_size.width < 60 || term_size.height < 3;
-                    let border_offset: u16 = if is_compact { 0 } else { 1 };
-                    let spinner_offset: u16 = if is_busy { 1 } else { 0 };
-                    let cursor_offset = border_offset + spinner_offset + cursor_row as u16;
-
-                    if cursor_offset > 0 {
-                        let _ = execute!(
-                            std::io::stdout(),
-                            cursor::MoveUp(cursor_offset),
-                            cursor::MoveToColumn(0),
-                            terminal::Clear(ClearType::FromCursorDown)
-                        );
-                    } else {
-                        let _ = execute!(
-                            std::io::stdout(),
-                            cursor::MoveToColumn(0),
-                            terminal::Clear(ClearType::FromCursorDown)
-                        );
-                    }
-
-                    drop(terminal);
-                    let backend = CrosstermBackend::new(std::io::stdout());
-                    terminal = Terminal::with_options(
-                        backend,
-                        TerminalOptions {
-                            viewport: Viewport::Inline(viewport_height),
-                        },
-                    )?;
                 }
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
                     // Check Ctrl+C
@@ -860,6 +855,7 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                     input.delete_forward();
                                 }
                                 KeyCode::Char('l') => {
+                                    transcript.clear();
                                     execute!(
                                         std::io::stdout(),
                                         terminal::Clear(ClearType::All),
@@ -876,8 +872,8 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                     )?;
                                     status.refresh(&conn);
                                     let current_w = terminal.size().map(|s| s.width).unwrap_or(80);
-                                    let w_lines = render_banner_lines(&theme, &cwd, status.sources, status.chunks, current_w as usize);
-                                    emit(&mut terminal, w_lines, current_w)?;
+                                    let banner = Entry::banner(cwd.clone(), status.sources, status.chunks);
+                                    emit_entry(&mut terminal, &mut transcript, banner, current_w, &theme)?;
                                     input.clear();
                                 }
                                 _ => {}
@@ -959,23 +955,19 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                 // 0. Derive current terminal width dynamically on submit
                                 let current_width = terminal.size().map(|s| s.width).unwrap_or(80);
 
-                                // 1. Spacing: one blank line between turns
-                                if turns_completed > 0 {
-                                    emit(&mut terminal, vec![Line::default()], current_width)?;
-                                }
+                                // 1. Echo user message into scrollback & transcript
+                                let user_entry = Entry::user_message(&submitted);
+                                emit_entry(&mut terminal, &mut transcript, user_entry, current_width, &theme)?;
 
-                                // 2. User message is always emitted first into scrollback
-                                let user_lines = MessageFormatter::render_user_message(&submitted, &theme);
-                                emit(&mut terminal, user_lines, current_width)?;
-
-                                // 3. Execute command via decoupled handler
+                                // 2. Execute command via decoupled handler
                                 match execute_command_with_width(&submitted, &mut status, &mut api, &conn, &theme, current_width as usize) {
                                     CommandOutput::Lines(lines) => {
-                                        emit(&mut terminal, lines, current_width)?;
-                                        turns_completed += 1;
+                                        let cmd_entry = Entry::command_output(lines);
+                                        emit_entry(&mut terminal, &mut transcript, cmd_entry, current_width, &theme)?;
                                     }
                                     CommandOutput::Clear => {
                                         memory.clear();
+                                        transcript.clear();
                                         execute!(
                                             std::io::stdout(),
                                             terminal::Clear(ClearType::All),
@@ -992,26 +984,19 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                         )?;
                                         status.refresh(&conn);
                                         let current_w = terminal.size().map(|s| s.width).unwrap_or(80);
-                                        let w_lines = render_banner_lines(&theme, &cwd, status.sources, status.chunks, current_w as usize);
-                                        emit(&mut terminal, w_lines, current_w)?;
+                                        let banner = Entry::banner(cwd.clone(), status.sources, status.chunks);
+                                        emit_entry(&mut terminal, &mut transcript, banner, current_w, &theme)?;
                                         input.clear();
                                     }
                                     CommandOutput::New => {
                                         memory.clear();
-                                        let note = vec![Line::from(vec![
-                                            Span::raw("  "),
-                                            Span::styled("Started fresh conversation (history cleared)", theme.style_muted()),
-                                        ])];
-                                        emit(&mut terminal, note, current_width)?;
-                                        turns_completed += 1;
+                                        let note = Entry::notice("Started fresh conversation (history cleared)");
+                                        emit_entry(&mut terminal, &mut transcript, note, current_width, &theme)?;
                                     }
                                     CommandOutput::Exit => {
                                         break;
                                     }
                                     CommandOutput::Index { path } => {
-                                        // Spacing: one blank line between echoed user message and first tool row
-                                        emit(&mut terminal, vec![Line::default()], current_width)?;
-
                                         let token = CancellationToken::new();
                                         cancel_token = Some(token.clone());
                                         is_busy = true;
@@ -1029,9 +1014,6 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                     }
                                     CommandOutput::Question { query } => {
                                         if let Some(ref api_client) = api {
-                                            // Spacing: one blank line between echoed user message and first tool row
-                                            emit(&mut terminal, vec![Line::default()], current_width)?;
-
                                             let token = CancellationToken::new();
                                             cancel_token = Some(token.clone());
                                             is_busy = true;
@@ -1067,8 +1049,8 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                             });
                                         } else {
                                             let err_lines = vec![Line::from("API not configured. Check your API keys and endpoints in /status.")];
-                                            emit(&mut terminal, err_lines, current_width)?;
-                                            turns_completed += 1;
+                                            let cmd_entry = Entry::command_output(err_lines);
+                                            emit_entry(&mut terminal, &mut transcript, cmd_entry, current_width, &theme)?;
                                         }
                                     }
                                 }
@@ -1129,7 +1111,7 @@ fn render_input_box(f: &mut ratatui::Frame, area: Rect, input: &mut InputState, 
     if area.width == 0 || area.height == 0 {
         return;
     }
-    let is_compact = area.width < 60 || area.height < 3;
+    let is_compact = f.area().width < 60 || f.area().height < 3;
     let block = if is_compact {
         Block::default().borders(Borders::NONE)
     } else {

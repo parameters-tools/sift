@@ -66,6 +66,18 @@ pub fn get_stats(conn: &Connection) -> Result<(i64, i64)> {
     Ok((sources, chunks))
 }
 
+pub fn get_top_sources(conn: &Connection, limit: usize) -> Result<Vec<(String, usize)>> {
+    let mut stmt = conn.prepare(
+        "SELECT source, COUNT(*) as cnt FROM chunks GROUP BY source ORDER BY cnt DESC, source ASC LIMIT ?1"
+    )?;
+    let rows = stmt.query_map([limit as i64], |r| Ok((r.get(0)?, r.get::<_, i64>(1)? as usize)))?;
+    let mut list = Vec::new();
+    for row in rows {
+        list.push(row?);
+    }
+    Ok(list)
+}
+
 pub fn ensure_compatible(chunks: &[Chunk], query: &[f32]) -> Result<()> {
     if let Some(item) = chunks.iter().find(|c| c.vector.len() != query.len()) {
         bail!(

@@ -1,0 +1,252 @@
+[
+  {
+    "id": "TC-01",
+    "category": "Factual Retrieval",
+    "query": "What are the total backbone parameters and Engram parameters of DeepSeek-V4.1-Flash?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash has 552B backbone parameters and 196B Engram parameters.",
+    "key_facts": ["552B", "backbone", "196B", "Engram"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-02",
+    "category": "Factual Retrieval",
+    "query": "How many parameters are activated per token during prefill versus decode in DeepSeek-V4.1-Flash?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash activates 8B parameters per token during prefill and 16B parameters per token during decode.",
+    "key_facts": ["8B", "prefill", "16B", "decode"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-03",
+    "category": "Factual Retrieval",
+    "query": "What is the parameter count of the largest GPT-2 model described in the paper?",
+    "expected_sources": ["gpt2.pdf"],
+    "ground_truth": "The largest GPT-2 model has 1.5 billion (1542M) parameters.",
+    "key_facts": ["1.5B", "1542M", "1.5 billion"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-04",
+    "category": "Factual Retrieval",
+    "query": "What dataset was GPT-2 trained on, and how was it curated?",
+    "expected_sources": ["gpt2.pdf"],
+    "ground_truth": "GPT-2 was trained on WebText, a dataset containing slightly over 8 million documents (around 40GB of text) scraped from Reddit outbound links with at least 3 karma.",
+    "key_facts": ["WebText", "8 million", "Reddit", "3 karma"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-05",
+    "category": "Factual Retrieval",
+    "query": "What programming languages and backend technologies does Snehil Khokhar list on his resume?",
+    "expected_sources": ["SnehilResume.pdf"],
+    "ground_truth": "Snehil lists Python, Rust, C++, SQL, REST APIs, Docker, Git, and Linux under Backend & Infra and Technical Skills.",
+    "key_facts": ["Python", "Rust", "C++", "SQL", "Docker", "Linux"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-06",
+    "category": "Factual Retrieval",
+    "query": "What is the maximum context length supported by DeepSeek-V4.1-Flash and how many tokens was it pretrained on?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash supports context lengths of up to one million (1M) tokens and was pretrained on a multimodal corpus comprising 45T tokens.",
+    "key_facts": ["one million", "1M", "45T tokens"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-07",
+    "category": "Multi-Hop Reasoning",
+    "query": "Compare the architectural design of DeepSeek-V4.1-Flash with GPT-2. How do their attention and decoder mechanisms differ?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf", "gpt2.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash uses a multimodal Causal Encoder-Decoder (CED) Mixture-of-Experts (MoE) architecture with Compressed Sparse Attention 2 (CSA2) and cross-layer KV cache reuse, activating 8B/16B parameters conditionally. In contrast, GPT-2 uses a standard dense, decoder-only Transformer with causal masking and full self-attention across 1024 tokens.",
+    "key_facts": ["Encoder-Decoder", "MoE", "decoder-only", "dense", "sparse", "KV cache"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-08",
+    "category": "Multi-Hop Reasoning",
+    "query": "How does DeepSeek-V4.1-Flash's total backbone parameter scale compare to the largest GPT-2 model?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf", "gpt2.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash has 552B backbone parameters, whereas the largest GPT-2 model has 1.5B parameters. DeepSeek is approximately 368 times larger in total backbone parameters.",
+    "key_facts": ["552B", "1.5B", "larger"],
+    "is_negative": false,
+    "requires_math": true
+  },
+  {
+    "id": "TC-09",
+    "category": "Multi-Hop Reasoning",
+    "query": "Explain Snehil Khokhar's experience with RAG systems and what techniques he implemented in his TRAG project.",
+    "expected_sources": ["SnehilResume.pdf"],
+    "ground_truth": "In his TRAG (Terminal RAG Engine) project, Snehil combined dense vector embeddings, BM25 lexical search, and Reciprocal Rank Fusion (RRF) with FlashRank reranking across a vector database, achieving a 40% reduction in hallucinations.",
+    "key_facts": ["TRAG", "BM25", "RRF", "FlashRank", "vector", "hallucinations"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-10",
+    "category": "Multi-Hop Reasoning",
+    "query": "How does DeepSeek-V4.1-Flash achieve KV cache compression and what is its global KV cache size per token in HBM?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash achieves KV cache compression by combining cross-layer KV cache reuse in Compressed Sparse Attention 2 (CSA2) with FP4 KV caching and SWA Bounded Replay, reducing global KV cache footprint in HBM to 890 bytes per token.",
+    "key_facts": ["CSA2", "FP4", "890 bytes", "HBM", "SWA Bounded Replay"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-11",
+    "category": "Multi-Hop Reasoning",
+    "query": "Contrast the training corpora used for GPT-2 versus DeepSeek-V4.1-Flash in terms of data scale and modality.",
+    "expected_sources": ["gpt2.pdf", "DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "GPT-2 was trained on WebText, an English text-only dataset of 8 million documents (around 40GB). DeepSeek-V4.1-Flash was pretrained on a massive multimodal corpus comprising 45 trillion (45T) tokens spanning diverse textual and visual domains.",
+    "key_facts": ["WebText", "text-only", "40GB", "8 million", "multimodal", "45T"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-12",
+    "category": "Quantitative Analysis",
+    "query": "What percentage of DeepSeek-V4.1-Flash's 552B backbone parameters are activated during decode mode with 16B active parameters?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "With 16B active parameters out of 552B backbone parameters during decode, approximately 2.9% (16 / 552 = 2.898%) of the backbone parameters are activated.",
+    "key_facts": ["2.9%", "2.89%", "2.9", "16B", "552B"],
+    "is_negative": false,
+    "requires_math": true
+  },
+  {
+    "id": "TC-13",
+    "category": "Quantitative Analysis",
+    "query": "What is the combined total of DeepSeek-V4.1-Flash's 552B backbone parameters and 196B Engram parameters?",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "552B + 196B = 748B total parameters.",
+    "key_facts": ["748B", "748 billion", "748"],
+    "is_negative": false,
+    "requires_math": true
+  },
+  {
+    "id": "TC-14",
+    "category": "Quantitative Analysis",
+    "query": "By what percentage did Snehil's queuing theory optimization reduce shift costs at Samatrix.io, and what were the before and after cost figures?",
+    "expected_sources": ["SnehilResume.pdf"],
+    "ground_truth": "The staffing recommendations reduced total shift cost by 89%, from Rs. 63,951 down to Rs. 6,887.",
+    "key_facts": ["89%", "63,951", "6,887"],
+    "is_negative": false,
+    "requires_math": true
+  },
+  {
+    "id": "TC-15",
+    "category": "Quantitative Analysis",
+    "query": "What was the reduction in VRAM footprint achieved by Snehil's LLMTuner project using 4-bit NormalFloat (NF4) and double quantization?",
+    "expected_sources": ["SnehilResume.pdf"],
+    "ground_truth": "LLMTuner reduced the VRAM footprint by approximately 70% using 4-bit NormalFloat (NF4) and double quantization.",
+    "key_facts": ["70%", "VRAM", "NF4", "double quantization"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-16",
+    "category": "Exact Entity Tracking",
+    "query": "What is LLMTuner, who built it, and what technologies and libraries does it utilize?",
+    "expected_sources": ["SnehilResume.pdf"],
+    "ground_truth": "LLMTuner is an open-source CLI toolkit for fine-tuning open-weight LLMs (Qwen, LLaMA, Mistral) with QLoRA/LoRA adaptation, built by Snehil Khokhar using Python, PyTorch, Hugging Face (PEFT, TRL, Transformers), bitsandbytes, and Rich.",
+    "key_facts": ["Snehil", "QLoRA", "bitsandbytes", "PyTorch", "Hugging Face"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-17",
+    "category": "Exact Entity Tracking",
+    "query": "What institution did Snehil Khokhar attend for his B.Tech, what was his degree, and what was his CGPA?",
+    "expected_sources": ["SnehilResume.pdf"],
+    "ground_truth": "Snehil attended JECRC University in Jaipur, Rajasthan, pursuing a B.Tech in Computer Science (2023–2027) with a CGPA of 8.45/10.",
+    "key_facts": ["JECRC University", "B.Tech", "Computer Science", "8.45"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-18",
+    "category": "Exact Entity Tracking",
+    "query": "According to the project README, what are the primary CLI subcommands provided by Sift?",
+    "expected_sources": ["README.md"],
+    "ground_truth": "Sift provides the subcommands: chat (interactive shell), init (initialize local index), index (add/refresh files), ask (ask question and get cited answer), search (hybrid chunk retrieval), and stats (chunk and source counts).",
+    "key_facts": ["chat", "init", "index", "ask", "search", "stats"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-19",
+    "category": "Exact Entity Tracking",
+    "query": "What is the context size and vocabulary size of the GPT-2 model according to the paper?",
+    "expected_sources": ["gpt2.pdf"],
+    "ground_truth": "GPT-2 increased the context size to 1024 tokens (up from 512) and expanded the vocabulary to 50,257 tokens using byte-level BPE.",
+    "key_facts": ["1024", "50,257", "BPE"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-20",
+    "category": "Negative Rejection",
+    "query": "What quantum supremacy results did Google Sycamore achieve in 2019 according to the indexed documents?",
+    "expected_sources": [],
+    "ground_truth": "The indexed documents do not contain information about Google Sycamore or quantum supremacy experiments.",
+    "key_facts": ["not mentioned", "not found", "not contain", "no information"],
+    "is_negative": true,
+    "requires_math": false
+  },
+  {
+    "id": "TC-21",
+    "category": "Negative Rejection",
+    "query": "What was Snehil Khokhar's high school percentage and favorite hobby according to his resume?",
+    "expected_sources": [],
+    "ground_truth": "Snehil Khokhar's resume does not state his high school percentage or his favorite hobbies.",
+    "key_facts": ["not mentioned", "not provided", "not stated", "not found"],
+    "is_negative": true,
+    "requires_math": false
+  },
+  {
+    "id": "TC-22",
+    "category": "Negative Rejection",
+    "query": "What are the architectural specifications and GPU cluster details of LLaMA 3 405B in the corpus?",
+    "expected_sources": [],
+    "ground_truth": "The indexed documents do not contain specifications or GPU cluster details for LLaMA 3 405B.",
+    "key_facts": ["not mentioned", "not contained", "not found", "no information"],
+    "is_negative": true,
+    "requires_math": false
+  },
+  {
+    "id": "TC-23",
+    "category": "Negative Rejection",
+    "query": "What was OpenAI's annual revenue and profit for fiscal year 2024 according to the indexed papers?",
+    "expected_sources": [],
+    "ground_truth": "The indexed documents do not contain financial statements, annual revenue, or profit data for OpenAI.",
+    "key_facts": ["not mentioned", "not found", "not contained", "no information"],
+    "is_negative": true,
+    "requires_math": false
+  },
+  {
+    "id": "TC-24",
+    "category": "Summarization",
+    "query": "Summarize the primary architectural contributions and efficiency gains of DeepSeek-V4.1-Flash.",
+    "expected_sources": ["DeepSeek_V41_Tech_Report.pdf"],
+    "ground_truth": "DeepSeek-V4.1-Flash introduces a 552B parameter MoE model with Causal Encoder-Decoder (CED) architecture activating only 8B parameters during prefill and 16B during decode. It achieves approximately 4-fold reduction in global KV cache size (890 bytes/token in HBM) using Compressed Sparse Attention 2 (CSA2) with cross-layer KV reuse and FP4 KV caching, and an 8-fold reduction in persistent KV cache via SWA Bounded Replay, supporting contexts up to 1M tokens across a 45T token multimodal training corpus.",
+    "key_facts": ["552B", "CED", "8B", "16B", "CSA2", "FP4", "890 bytes", "1M tokens"],
+    "is_negative": false,
+    "requires_math": false
+  },
+  {
+    "id": "TC-25",
+    "category": "Summarization",
+    "query": "Summarize the main hypothesis and empirical conclusion of the GPT-2 paper regarding unsupervised multitask learning.",
+    "expected_sources": ["gpt2.pdf"],
+    "ground_truth": "The GPT-2 paper demonstrates that language models trained on diverse web text (WebText) without explicit supervision learn to perform a wide variety of NLP tasks (reading comprehension, translation, summarization, question answering) in a zero-shot manner without requiring task-specific training datasets or architecture modifications as model capacity scales up to 1.5B parameters.",
+    "key_facts": ["unsupervised", "zero-shot", "WebText", "multitask", "capacity"],
+    "is_negative": false,
+    "requires_math": false
+  }
+]

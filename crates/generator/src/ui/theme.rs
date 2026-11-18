@@ -199,6 +199,14 @@ impl Theme {
         Style::default().add_modifier(Modifier::BOLD)
     }
 
+    pub fn style_normal(&self) -> Style {
+        if self.use_color {
+            Style::default().fg(self.text)
+        } else {
+            Style::default()
+        }
+    }
+
     // Terminal ANSI string helpers for scrollback printing
     pub fn paint_accent(&self, text: &str) -> String {
         if !self.use_color {

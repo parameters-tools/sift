@@ -86,6 +86,7 @@ pub struct MockServer {
     pub url: String,
     pub requests: Arc<Mutex<Vec<RecordedRequest>>>,
     queue: Arc<Mutex<VecDeque<BoxedHandler>>>,
+    default_handler: Arc<Mutex<Option<BoxedHandler>>>,
     shutdown_tx: Option<oneshot::Sender<()>>,
 }
 
@@ -97,10 +98,12 @@ impl MockServer {
         let url = format!("http://127.0.0.1:{port}");
         let requests = Arc::new(Mutex::new(Vec::new()));
         let queue: Arc<Mutex<VecDeque<BoxedHandler>>> = Arc::new(Mutex::new(VecDeque::new()));
+        let default_handler: Arc<Mutex<Option<BoxedHandler>>> = Arc::new(Mutex::new(None));
         let (shutdown_tx, mut shutdown_rx) = oneshot::channel();
 
         let reqs_clone = requests.clone();
         let queue_clone = queue.clone();
+        let def_clone = default_handler.clone();
 
         tokio::spawn(async move {
             loop {
@@ -111,6 +114,7 @@ impl MockServer {
                     Ok((mut stream, _)) = listener.accept() => {
                         let reqs = reqs_clone.clone();
                         let q = queue_clone.clone();
+                        let def = def_clone.clone();
                         tokio::spawn(async move {
                             let mut buf = Vec::new();
                             let mut temp = [0u8; 4096];
@@ -161,6 +165,8 @@ impl MockServer {
                                 let mut guard = q.lock().unwrap();
                                 if let Some(handler) = guard.pop_front() {
                                     handler(&recorded)
+                                } else if let Some(ref handler) = *def.lock().unwrap() {
+                                    handler(&recorded)
                                 } else {
                                     MockResponse::json(404, serde_json::json!({"error": "not configured"}))
                                 }
@@ -189,6 +195,7 @@ impl MockServer {
             url,
             requests,
             queue,
+            default_handler,
             shutdown_tx: Some(shutdown_tx),
         }
     }
@@ -200,6 +207,10 @@ impl MockServer {
             headers: resp.headers.clone(),
             body: resp.body.clone(),
         }));
+    }
+
+    pub fn set_default_handler<F: Fn(&RecordedRequest) -> MockResponse + Send + Sync + 'static>(&self, handler: F) {
+        *self.default_handler.lock().unwrap() = Some(Box::new(handler));
     }
 
     pub fn push_handler<F>(&self, f: F)

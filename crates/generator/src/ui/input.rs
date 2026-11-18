@@ -12,19 +12,45 @@ pub struct InputState {
     pub history_path: PathBuf,
     pub placeholder_idx: usize,
     pub last_placeholder_tick: Instant,
+    pub placeholders: Vec<String>,
     pub shortcuts_open: bool,
     pub last_ctrl_c: Option<Instant>,
 }
 
-impl InputState {
-    pub const PLACEHOLDERS: &'static [&'static str] = &[
-        "Try \"what does the report say about Q3 revenue?\"",
-        "Ask a question or type / for commands",
-        "Try \"summarize the main policy changes\"",
-        "Try \"explain the refund process step by step\"",
-        "Type /help to see all available commands",
+pub fn generate_placeholders(sources: &[String]) -> Vec<String> {
+    if sources.is_empty() {
+        return vec!["Type /add <path> to index your documents".to_string()];
+    }
+
+    let templates: &[fn(&str) -> String] = &[
+        |file| format!("Try \"Summarize {file}\""),
+        |file| format!("Try \"What are the key points of {file}?\""),
+        |file| format!("Try \"Explain the main findings in {file}\""),
+        |file| format!("Try \"What does {file} say about...?\""),
     ];
 
+    let mut placeholders = Vec::new();
+    for (i, src) in sources.iter().enumerate() {
+        let raw_name = std::path::Path::new(src)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or(src);
+
+        let file_name = if raw_name.chars().count() > 30 {
+            let truncated: String = raw_name.chars().take(29).collect();
+            format!("{truncated}…")
+        } else {
+            raw_name.to_string()
+        };
+
+        let template_fn = templates[i % templates.len()];
+        placeholders.push(template_fn(&file_name));
+    }
+
+    placeholders
+}
+
+impl InputState {
     pub fn new(history_dir: &Path) -> Self {
         let history_path = history_dir.join("history");
         let history = Self::load_history(&history_path);
@@ -38,17 +64,27 @@ impl InputState {
             history_path,
             placeholder_idx: 0,
             last_placeholder_tick: Instant::now(),
+            placeholders: generate_placeholders(&[]),
             shortcuts_open: false,
             last_ctrl_c: None,
         }
     }
 
-    pub fn current_placeholder(&mut self) -> &'static str {
+    pub fn set_sources(&mut self, sources: &[String]) {
+        self.placeholders = generate_placeholders(sources);
+        self.placeholder_idx = 0;
+        self.last_placeholder_tick = Instant::now();
+    }
+
+    pub fn current_placeholder(&mut self) -> &str {
+        if self.placeholders.is_empty() {
+            return "Type /add <path> to index your documents";
+        }
         if self.last_placeholder_tick.elapsed() > Duration::from_secs(6) {
-            self.placeholder_idx = (self.placeholder_idx + 1) % Self::PLACEHOLDERS.len();
+            self.placeholder_idx = (self.placeholder_idx + 1) % self.placeholders.len();
             self.last_placeholder_tick = Instant::now();
         }
-        Self::PLACEHOLDERS[self.placeholder_idx]
+        &self.placeholders[self.placeholder_idx]
     }
 
     pub fn is_empty(&self) -> bool {
@@ -452,5 +488,39 @@ mod tests {
         assert_eq!(row, 1);
 
         let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn test_placeholder_generation_0_1_and_5_sources() {
+        // 0 sources
+        let ph0 = generate_placeholders(&[]);
+        assert_eq!(ph0.len(), 1);
+        assert_eq!(ph0[0], "Type /add <path> to index your documents");
+
+        // 1 source
+        let ph1 = generate_placeholders(&["DeepSeek_V41_Tech_Report.pdf".to_string()]);
+        assert_eq!(ph1.len(), 1);
+        assert!(ph1[0].contains("DeepSeek_V41_Tech_Report.pdf"));
+        assert!(ph1[0].starts_with("Try \""));
+
+        // 5 sources (including one with a long name > 30 chars to test truncation with "…")
+        let sources = vec![
+            "ShortDoc.md".to_string(),
+            "VeryLongDocumentNameExceedingThirtyCharactersTotalReport.pdf".to_string(),
+            "SnehilResume.pdf".to_string(),
+            "QuarterlyFinancials.xlsx".to_string(),
+            "SystemArchitectureOverview.rst".to_string(),
+        ];
+        let ph5 = generate_placeholders(&sources);
+        assert_eq!(ph5.len(), 5);
+        assert!(ph5[0].contains("ShortDoc.md"));
+        assert!(ph5[1].contains('…')); // truncated long file name
+        assert!(ph5[2].contains("SnehilResume.pdf"));
+        assert!(ph5[3].contains("QuarterlyFinancials.xlsx"));
+        assert!(ph5[4].contains("SystemArchitectureOverview.rst"));
+
+        for ph in &ph5 {
+            assert!(ph.starts_with("Try \""));
+        }
     }
 }

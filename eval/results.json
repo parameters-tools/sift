@@ -1,0 +1,1014 @@
+[
+  {
+    "id": "TC-01",
+    "category": "Factual Retrieval",
+    "query": "What are the total backbone parameters and Engram parameters of DeepSeek-V4.1-Flash?",
+    "ground_truth": "DeepSeek-V4.1-Flash has 552B backbone parameters and 196B Engram parameters.",
+    "generated_answer": "DeepSeek-V4.1-Flash has **552B backbone parameters** and **196B Engram parameters** [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.062,
+    "generation_latency_sec": 1.358,
+    "total_latency_sec": 1.419,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The generated answer directly states the two requested parameter counts. Both values are explicitly supported by retrieved context [1], which says DeepSeek-V4.1-Flash has 552B backbone parameters and 196B Engram parameters. This exactly matches the ground truth."
+    }
+  },
+  {
+    "id": "TC-02",
+    "category": "Factual Retrieval",
+    "query": "How many parameters are activated per token during prefill versus decode in DeepSeek-V4.1-Flash?",
+    "ground_truth": "DeepSeek-V4.1-Flash activates 8B parameters per token during prefill and 16B parameters per token during decode.",
+    "generated_answer": "DeepSeek-V4.1-Flash activates **8B parameters per token during prefill** and **16B parameters per token during decode** [1][3][6].",
+    "citations": [
+      1,
+      3,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 1.876,
+    "total_latency_sec": 1.922,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The generated answer states that DeepSeek-V4.1-Flash activates 8B parameters per token during prefill and 16B during decode. This is directly supported by retrieved contexts [1], [3], and [6], and it exactly matches the ground truth."
+    }
+  },
+  {
+    "id": "TC-03",
+    "category": "Factual Retrieval",
+    "query": "What is the parameter count of the largest GPT-2 model described in the paper?",
+    "ground_truth": "The largest GPT-2 model has 1.5 billion (1542M) parameters.",
+    "generated_answer": "The excerpts do not give an exact parameter count for the largest GPT-2 model. They only mention that the experiments \u201ccontinue into the 1B+ parameter regime\u201d [6], so I do not have enough information to state the precise parameter count.",
+    "citations": [
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 1.941,
+    "total_latency_sec": 1.987,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.3333333333333333,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-04",
+    "category": "Factual Retrieval",
+    "query": "What dataset was GPT-2 trained on, and how was it curated?",
+    "ground_truth": "GPT-2 was trained on WebText, a dataset containing slightly over 8 million documents (around 40GB of text) scraped from Reddit outbound links with at least 3 karma.",
+    "generated_answer": "GPT-2 was trained on **WebText** [2][6]. The excerpts describe only limited curation details: non-English webpages were deliberately removed as a filtering step, and a byte-level language detector found only about 10MB of French data in WebText\u2014roughly 500\u00d7 smaller than a comparable monolingual French corpus [2]. The excerpts also note that `<UNK>` is extremely rare in WebText, occurring only 26 times in 40 billion bytes [6].\n\n- WebText is referred to as the training set for overlap/memorization analysis [3].\n- The excerpts do **not** describe the full WebText construction pipeline (e.g., how pages were collected, deduplicated, or filtered beyond the non-English removal) [2][3][6].\n- The mention of the iWeb Corpus is about an alternative approach explored in related work, not GPT-2\u2019s training data [4].\n\nSo the supplied excerpts identify WebText and one filtering step, but they are missing most of the curation details needed to fully answer how the dataset was curated.",
+    "citations": [
+      2,
+      3,
+      4,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 5.915,
+    "total_latency_sec": 5.961,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.25,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.25,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-05",
+    "category": "Factual Retrieval",
+    "query": "What programming languages and backend technologies does Snehil Khokhar list on his resume?",
+    "ground_truth": "Snehil lists Python, Rust, C++, SQL, REST APIs, Docker, Git, and Linux under Backend & Infra and Technical Skills.",
+    "generated_answer": "Snehil Khokhar lists these programming languages and backend/infra technologies on his resume [1]:\n\n- **Programming languages:** Python, Rust, C++, SQL\n- **Backend & infra:** REST APIs, Docker, Git, Linux\n\nHe also lists related tools such as Keras, Scikit-learn, Pandas, NumPy, and Matplotlib under \u201cAlso\u201d [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/advanced-rag/README.md"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.045,
+    "generation_latency_sec": 2.764,
+    "total_latency_sec": 2.809,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.25,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer is fully supported by retrieved context [1], directly addresses the question, and matches the ground truth exactly, including the listed languages and backend/infra technologies."
+    }
+  },
+  {
+    "id": "TC-06",
+    "category": "Factual Retrieval",
+    "query": "What is the maximum context length supported by DeepSeek-V4.1-Flash and how many tokens was it pretrained on?",
+    "ground_truth": "DeepSeek-V4.1-Flash supports context lengths of up to one million (1M) tokens and was pretrained on a multimodal corpus comprising 45T tokens.",
+    "generated_answer": "DeepSeek-V4.1-Flash supports contexts of up to **1 million tokens** and was pretrained on **45T tokens** of multimodal data [2].",
+    "citations": [
+      2
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.051,
+    "generation_latency_sec": 1.896,
+    "total_latency_sec": 1.947,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer directly states the 1M-token context length and 45T-token multimodal pretraining, both explicitly supported by retrieved context [2] and matching the ground truth."
+    }
+  },
+  {
+    "id": "TC-07",
+    "category": "Multi-Hop Reasoning",
+    "query": "Compare the architectural design of DeepSeek-V4.1-Flash with GPT-2. How do their attention and decoder mechanisms differ?",
+    "ground_truth": "DeepSeek-V4.1-Flash uses a multimodal Causal Encoder-Decoder (CED) Mixture-of-Experts (MoE) architecture with Compressed Sparse Attention 2 (CSA2) and cross-layer KV cache reuse, activating 8B/16B parameters conditionally. In contrast, GPT-2 uses a standard dense, decoder-only Transformer with causal masking and full self-attention across 1024 tokens.",
+    "generated_answer": "I do not have enough information to make this comparison. The excerpts describe DeepSeek-V4.1-Flash in detail but contain no description of GPT-2's attention or decoder design, so any contrast would require outside knowledge not present in the sources.\n\nWhat the excerpts do establish about DeepSeek-V4.1-Flash:\n\n- It is a multimodal MoE Transformer with a 40-layer language backbone split into a 20-layer causal encoder and a 20-layer decoder; every layer has both global attention and sliding-window attention (SWA), except the first two layers, which use SWA only [5].\n- The Causal Encoder\u2013Decoder (CED) design builds the decoder's global KV cache from encoder outputs, letting most prompt tokens bypass full decoder computation and nearly halving prefill cost [5].\n- Attention is Compressed Sparse Attention 2 (CSA2), which shares global KV across layers and reuses sparse selections to cut indexing work; a Hierarchical Sparse Indexer restricts later indexers to a candidate pool chosen by an earlier indexer [5].\n- It uses pure CSA2 rather than the CSA\u2013HCA hybrid of DeepSeek-V4, plus FP4 global KV caches and FP8 for the more quantization-sensitive SWA cache [1][6].\n- SWA Bounded Replay approximately reconstructs SWA KV states by replaying only the most recent n_win tokens, avoiding persisting SWA KV cache to SSD [1].\n- It activates 8B parameters per token during prefill and 16B during decode, out of 552B backbone parameters plus 196B Engram parameters [5].\n\nMissing information: any specification of GPT-2's layer count, attention type (e.g., causal self-attention only), absence of an encoder/decoder split, or its KV-cache behavior.",
+    "citations": [
+      1,
+      5,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.044,
+    "generation_latency_sec": 2.983,
+    "total_latency_sec": 3.027,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.8333333333333334,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-08",
+    "category": "Multi-Hop Reasoning",
+    "query": "How does DeepSeek-V4.1-Flash's total backbone parameter scale compare to the largest GPT-2 model?",
+    "ground_truth": "DeepSeek-V4.1-Flash has 552B backbone parameters, whereas the largest GPT-2 model has 1.5B parameters. DeepSeek is approximately 368 times larger in total backbone parameters.",
+    "generated_answer": "The excerpts state that DeepSeek-V4.1-Flash has **552B backbone parameters** [3][6]. However, they do not provide the parameter scale of the largest GPT-2 model, so I do not have enough information to make that comparison.",
+    "citations": [
+      3,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.047,
+    "generation_latency_sec": 1.201,
+    "total_latency_sec": 1.248,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.6666666666666666,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.3333333333333333,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 0.3333333333333333,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-09",
+    "category": "Multi-Hop Reasoning",
+    "query": "Explain Snehil Khokhar's experience with RAG systems and what techniques he implemented in his TRAG project.",
+    "ground_truth": "In his TRAG (Terminal RAG Engine) project, Snehil combined dense vector embeddings, BM25 lexical search, and Reciprocal Rank Fusion (RRF) with FlashRank reranking across a vector database, achieving a 40% reduction in hallucinations.",
+    "generated_answer": "**Snehil Khokhar's RAG background.** His resume summary states he has hands-on experience building LLM and RAG systems using OpenAI, Gemini, Claude, and open-source models, and that he built a hybrid RAG engine combining dense embeddings, BM25, and reranking [1]. His listed RAG/retrieval skills include embeddings, vector search, ChromaDB, BM25, semantic search, and agent systems [1].\n\n**TRAG \u2014 Terminal RAG Engine (June 2026 \u2013 July 2026).** Built in Python with Ollama, BM25, FlashRank, RRF, and vector search, it is described as a privacy-first CLI for grounded Q&A over documents, tables, and codebases [1]. Techniques implemented:\n\n- Hybrid retrieval combining dense vector embeddings, BM25, and reciprocal rank fusion (RRF), followed by FlashRank reranking across a vector database [1]\n- Reported outcome: approximately 40% reduction in hallucinations [1]\n- `.gitignore`-aware ingestion and multi-turn memory [1]\n- Row-level parsing of CSV/Excel/JSON, shell piping, and streaming inference via Ollama, Gemini, OpenAI, Claude, and Groq [1]\n\n**What's missing.** The excerpts give no retrieval-quality benchmarks for TRAG (e.g., recall, precision, or nDCG), no dataset sizes, and no latency or cost figures \u2014 only the ~40% hallucination-reduction claim [1]. Also note that sources [2] and [3] describe a separate Rust \"Advanced RAG CLI\" project and are not attributed to Snehil, so I did not use them for this answer.",
+    "citations": [
+      1,
+      2,
+      3
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/advanced-rag/README.md",
+      "/home/kevin/advanced-rag/README.md",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.044,
+    "generation_latency_sec": 5.992,
+    "total_latency_sec": 6.036,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.25,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 0.3333333333333333,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer is fully supported by retrieved context [1], directly addresses Snehil's RAG experience and TRAG techniques, and matches the ground truth: dense embeddings, BM25, RRF, FlashRank reranking, vector database, and ~40% hallucination reduction. It also correctly notes unsupported details and distinguishes unrelated sources [2]/[3]."
+    }
+  },
+  {
+    "id": "TC-10",
+    "category": "Multi-Hop Reasoning",
+    "query": "How does DeepSeek-V4.1-Flash achieve KV cache compression and what is its global KV cache size per token in HBM?",
+    "ground_truth": "DeepSeek-V4.1-Flash achieves KV cache compression by combining cross-layer KV cache reuse in Compressed Sparse Attention 2 (CSA2) with FP4 KV caching and SWA Bounded Replay, reducing global KV cache footprint in HBM to 890 bytes per token.",
+    "generated_answer": "DeepSeek-V4.1-Flash compresses KV cache through several combined mechanisms:\n\n- **CSA2 cross-layer reuse:** Compressed Sparse Attention 2 reuses global KV\u2014including main KV and indexer K\u2014and Top-K indices across layers, with Full, Reindex, and Reuse modes; each layer still keeps its own global Q and SWA KV [3].\n- **FP4 global KV caching:** It uses FP4 global KV caches during training with only marginal degradation, while retaining FP8 for the more quantization-sensitive SWA KV cache [2][6].\n- **SWA Bounded Replay:** Instead of persisting SWA KV to SSD, it approximately reconstructs SWA KV states by replaying only the most recent `nwin` tokens, incurring small prefill recomputation [2].\n\nIts **global KV cache footprint\u2014always in HBM\u2014is 890 bytes per token**, roughly **1/4** of DeepSeek-V4-Flash\u2019s corresponding footprint [1][4]. The report also states this is approximately a **4-fold** reduction relative to DeepSeek-V4-Flash and **437-fold** relative to DeepSeek-V1 [1]. Separately, SWA Bounded Replay reduces the **persistent** KV cache footprint to roughly **1/8** of DeepSeek-V4-Flash\u2019s [1][2][4].",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 5.489,
+    "total_latency_sec": 5.535,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-11",
+    "category": "Multi-Hop Reasoning",
+    "query": "Contrast the training corpora used for GPT-2 versus DeepSeek-V4.1-Flash in terms of data scale and modality.",
+    "ground_truth": "GPT-2 was trained on WebText, an English text-only dataset of 8 million documents (around 40GB). DeepSeek-V4.1-Flash was pretrained on a massive multimodal corpus comprising 45 trillion (45T) tokens spanning diverse textual and visual domains.",
+    "generated_answer": "I do not have enough information to make this comparison: the supplied excerpts contain no details about GPT-2's training corpus (neither its scale nor its modality). What is missing is any source describing GPT-2's pretraining data.\n\nFor DeepSeek-V4.1-Flash, the excerpts do provide the following:\n\n- **Scale:** pretrained on a large-scale multimodal corpus comprising **45T tokens** [1][4][6].\n- **Modality:** the corpus is **multimodal** (text plus images), and the model is described as having native multimodal capabilities after pretraining [1][3][6].\n- **Training details:** sparse attention was trained from scratch at a 64K sequence length with no dense-attention warmup, and the sequence length was extended to 1M at 34T tokens [1][4]. The vision encoder was trained separately on roughly **47B image-text pairs** from alt-text data [4].\n\nWithout a corresponding GPT-2 source, no contrast on scale or modality can be drawn.",
+    "citations": [
+      1,
+      3,
+      4,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.047,
+    "generation_latency_sec": 2.25,
+    "total_latency_sec": 2.297,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.3333333333333333,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.3333333333333333,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-12",
+    "category": "Quantitative Analysis",
+    "query": "What percentage of DeepSeek-V4.1-Flash's 552B backbone parameters are activated during decode mode with 16B active parameters?",
+    "ground_truth": "With 16B active parameters out of 552B backbone parameters during decode, approximately 2.9% (16 / 552 = 2.898%) of the backbone parameters are activated.",
+    "generated_answer": "16B activated during decode out of 552B backbone parameters is **16 \u00f7 552 \u2248 2.9%** [2].",
+    "citations": [
+      2
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.047,
+    "generation_latency_sec": 3.278,
+    "total_latency_sec": 3.325,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.4,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 0.8,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer correctly uses the retrieved context values (552B backbone parameters and 16B activated during decode) and computes 16/552 \u2248 2.9%, matching the ground truth. It directly addresses the question with no unsupported claims."
+    }
+  },
+  {
+    "id": "TC-13",
+    "category": "Quantitative Analysis",
+    "query": "What is the combined total of DeepSeek-V4.1-Flash's 552B backbone parameters and 196B Engram parameters?",
+    "ground_truth": "552B + 196B = 748B total parameters.",
+    "generated_answer": "The combined total is **748B parameters** (552B backbone + 196B Engram) [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.047,
+    "generation_latency_sec": 1.661,
+    "total_latency_sec": 1.708,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 0.6666666666666666,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer correctly sums the 552B backbone and 196B Engram parameters to 748B, directly matching the ground truth and supported by the retrieved context."
+    }
+  },
+  {
+    "id": "TC-14",
+    "category": "Quantitative Analysis",
+    "query": "By what percentage did Snehil's queuing theory optimization reduce shift costs at Samatrix.io, and what were the before and after cost figures?",
+    "ground_truth": "The staffing recommendations reduced total shift cost by 89%, from Rs. 63,951 down to Rs. 6,887.",
+    "generated_answer": "Snehil\u2019s queuing theory optimization at Samatrix.io reduced total shift cost by **89%**, from **Rs. 63,951 to Rs. 6,887** [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 1.352,
+    "total_latency_sec": 1.398,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.25,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The generated answer is directly supported by retrieved context [1], which states the staffing recommendations reduced total shift cost by 89% (Rs. 63,951 \u2192 Rs. 6,887). It directly answers the question and matches the ground truth exactly."
+    }
+  },
+  {
+    "id": "TC-15",
+    "category": "Quantitative Analysis",
+    "query": "What was the reduction in VRAM footprint achieved by Snehil's LLMTuner project using 4-bit NormalFloat (NF4) and double quantization?",
+    "ground_truth": "LLMTuner reduced the VRAM footprint by approximately 70% using 4-bit NormalFloat (NF4) and double quantization.",
+    "generated_answer": "Snehil\u2019s LLMTuner reduced VRAM footprint by approximately **70%** using 4-bit NormalFloat (NF4) and double quantization, enabling training on consumer GPUs [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.053,
+    "generation_latency_sec": 1.247,
+    "total_latency_sec": 1.3,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.25,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer is directly supported by retrieved context [1], which states LLMTuner reduced VRAM footprint by approximately 70% using 4-bit NormalFloat (NF4) and double quantization, enabling training on consumer GPUs. It directly answers the question and matches the ground truth exactly."
+    }
+  },
+  {
+    "id": "TC-16",
+    "category": "Exact Entity Tracking",
+    "query": "What is LLMTuner, who built it, and what technologies and libraries does it utilize?",
+    "ground_truth": "LLMTuner is an open-source CLI toolkit for fine-tuning open-weight LLMs (Qwen, LLaMA, Mistral) with QLoRA/LoRA adaptation, built by Snehil Khokhar using Python, PyTorch, Hugging Face (PEFT, TRL, Transformers), bitsandbytes, and Rich.",
+    "generated_answer": "LLMTuner is an open-source CLI toolkit for plug-and-play fine-tuning and deployment of open-weight LLMs, including Qwen, LLaMA, and Mistral, using QLoRA/LoRA adaptation [1][2]. It appears as a project on Snehil Khokhar\u2019s resume, so the supplied excerpts indicate he built it [2].\n\nTechnologies and libraries used:\n- Python\n- PyTorch\n- Hugging Face PEFT, TRL, and Transformers\n- bitsandbytes\n- Rich [1][2]\n\nThe excerpts also say it uses 4-bit NormalFloat (NF4) and double quantization to reduce VRAM footprint by about 70%, and includes terminal monitoring, adapter-weight merging, and GGUF/Modelfile generation for Ollama deployment [1].",
+    "citations": [
+      1,
+      2
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.045,
+    "generation_latency_sec": 2.752,
+    "total_latency_sec": 2.797,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.25,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer accurately identifies LLMTuner as an open-source CLI toolkit for fine-tuning/deploying open-weight LLMs with QLoRA/LoRA, attributes it to Snehil Khokhar based on the resume context, and lists the correct technologies/libraries. All claims are supported by the retrieved contexts and align with the ground truth."
+    }
+  },
+  {
+    "id": "TC-17",
+    "category": "Exact Entity Tracking",
+    "query": "What institution did Snehil Khokhar attend for his B.Tech, what was his degree, and what was his CGPA?",
+    "ground_truth": "Snehil attended JECRC University in Jaipur, Rajasthan, pursuing a B.Tech in Computer Science (2023\u20132027) with a CGPA of 8.45/10.",
+    "generated_answer": "Snehil Khokhar attended **JECRC University** for his **B.Tech in Computer Science**, where he had a **CGPA of 8.45/10** [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.048,
+    "generation_latency_sec": 1.937,
+    "total_latency_sec": 1.985,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.125,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The answer is fully supported by retrieved context [1], directly addresses all parts of the question, and matches the ground truth on institution, degree, and CGPA."
+    }
+  },
+  {
+    "id": "TC-18",
+    "category": "Exact Entity Tracking",
+    "query": "According to the project README, what are the primary CLI subcommands provided by Sift?",
+    "ground_truth": "Sift provides the subcommands: chat (interactive shell), init (initialize local index), index (add/refresh files), ask (ask question and get cited answer), search (hybrid chunk retrieval), and stats (chunk and source counts).",
+    "generated_answer": "I do not have enough information to answer this. None of the supplied excerpts mention a project or CLI named \"Sift.\"\n\nThe README excerpts provided describe a different tool \u2014 a \"local-first Rust command line RAG engine\" invoked as `rag` \u2014 and list its non-interactive subcommands as `init`, `index`, `ask`, `search`, and `stats` [1][3]. That is the only CLI command set in the context, and it is not attributed to Sift.\n\nWhat is missing: any documentation for Sift itself, including its name, purpose, or subcommand list. If Sift is a separate project, its README was not retrieved.",
+    "citations": [
+      1,
+      3
+    ],
+    "cited_sources": [
+      "/home/kevin/advanced-rag/README.md",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/advanced-rag/README.md",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 2.322,
+    "total_latency_sec": 2.368,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 0.25,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.8333333333333334,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-19",
+    "category": "Exact Entity Tracking",
+    "query": "What is the context size and vocabulary size of the GPT-2 model according to the paper?",
+    "ground_truth": "GPT-2 increased the context size to 1024 tokens (up from 512) and expanded the vocabulary to 50,257 tokens using byte-level BPE.",
+    "generated_answer": "According to the paper, GPT-2\u2019s vocabulary is expanded to **50,257**, and its context size is increased from **512 to 1024 tokens** [1].",
+    "citations": [
+      1
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.048,
+    "generation_latency_sec": 1.22,
+    "total_latency_sec": 1.267,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "The generated answer directly states GPT-2's vocabulary size of 50,257 and context size increase from 512 to 1024 tokens, both explicitly supported by retrieved context [1] and matching the ground truth."
+    }
+  },
+  {
+    "id": "TC-20",
+    "category": "Negative Rejection",
+    "query": "What quantum supremacy results did Google Sycamore achieve in 2019 according to the indexed documents?",
+    "ground_truth": "The indexed documents do not contain information about Google Sycamore or quantum supremacy experiments.",
+    "generated_answer": "I do not have enough information to answer this. The supplied excerpts are from the DeepSeek-V4.1 technical report and cover evaluation setups, benchmark tables, and coding scaffolds; none of them mention Google Sycamore, quantum supremacy, or any 2019 quantum computing results [1][3][6]. The remaining excerpts are reference lists on unrelated topics such as optimizers, attention architectures, and multimodal benchmarks [2][4][5].",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 1.486,
+    "total_latency_sec": 1.532,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "Negative query correctly rejected with no hallucinated facts."
+    }
+  },
+  {
+    "id": "TC-21",
+    "category": "Negative Rejection",
+    "query": "What was Snehil Khokhar's high school percentage and favorite hobby according to his resume?",
+    "ground_truth": "Snehil Khokhar's resume does not state his high school percentage or his favorite hobbies.",
+    "generated_answer": "The supplied resume excerpt does not include Snehil Khokhar\u2019s high school percentage or favorite hobby; it only lists his B.Tech education at JECRC University with a CGPA of 8.45/10 [2].",
+    "citations": [
+      2
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/SnehilResume.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.048,
+    "generation_latency_sec": 2.104,
+    "total_latency_sec": 2.152,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "Negative query correctly rejected with no hallucinated facts."
+    }
+  },
+  {
+    "id": "TC-22",
+    "category": "Negative Rejection",
+    "query": "What are the architectural specifications and GPU cluster details of LLaMA 3 405B in the corpus?",
+    "ground_truth": "The indexed documents do not contain specifications or GPU cluster details for LLaMA 3 405B.",
+    "generated_answer": "I do not have enough information to answer this. The supplied excerpts are all from the DeepSeek-V4.1-Flash tech report [1][2][3][4][5][6] and describe that model's architecture, KV cache design, training data, and training setups. They contain no specifications for LLaMA 3 405B and no GPU cluster details for it.\n\nWhat is missing: any source excerpt covering LLaMA 3 405B's parameter count, layer/head configuration, context length, training compute, or cluster (GPU type, count, interconnect, training duration).",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.044,
+    "generation_latency_sec": 1.733,
+    "total_latency_sec": 1.777,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "Negative query correctly rejected with no hallucinated facts."
+    }
+  },
+  {
+    "id": "TC-23",
+    "category": "Negative Rejection",
+    "query": "What was OpenAI's annual revenue and profit for fiscal year 2024 according to the indexed papers?",
+    "ground_truth": "The indexed documents do not contain financial statements, annual revenue, or profit data for OpenAI.",
+    "generated_answer": "I do not have enough information to answer this. The supplied excerpts do not contain any financial figures for OpenAI, let alone annual revenue or profit for fiscal year 2024.\n\nWhat the excerpts do contain is only bibliographic material \u2014 reference entries such as an OpenAI model card and the Codex repository [3], plus a README describing a RAG tool's commands and retrieval behavior [2]. Neither source reports corporate financial results, so revenue and profit figures are missing entirely.",
+    "citations": [
+      2,
+      3
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/advanced-rag/README.md",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 1.446,
+    "total_latency_sec": 1.492,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": "Negative query correctly rejected with no hallucinated facts."
+    }
+  },
+  {
+    "id": "TC-24",
+    "category": "Summarization",
+    "query": "Summarize the primary architectural contributions and efficiency gains of DeepSeek-V4.1-Flash.",
+    "ground_truth": "DeepSeek-V4.1-Flash introduces a 552B parameter MoE model with Causal Encoder-Decoder (CED) architecture activating only 8B parameters during prefill and 16B during decode. It achieves approximately 4-fold reduction in global KV cache size (890 bytes/token in HBM) using Compressed Sparse Attention 2 (CSA2) with cross-layer KV reuse and FP4 KV caching, and an 8-fold reduction in persistent KV cache via SWA Bounded Replay, supporting contexts up to 1M tokens across a 45T token multimodal training corpus.",
+    "generated_answer": "## Architectural contributions\n\nDeepSeek-V4.1-Flash is a multimodal Mixture-of-Experts model with a 552B-parameter backbone and support for contexts up to one million tokens [1]. Its central design is the Causal Encoder-Decoder (CED) architecture, which activates 16B parameters per token during decode but only 8B during prefill, targeting input-heavy agentic workloads [1][4]. The 40-layer network is split into a causal encoder and a decoder of 20 layers each; the first two encoder layers use sliding-window attention and the remainder use Compressed Sparse Attention 2 (CSA2), with each layer specifying a compression ratio and mode [5].\n\n- **CSA2 with cross-layer KV cache reuse**, used as a *pure* CSA2 architecture rather than the CSA\u2013HCA hybrid of DeepSeek-V4 [1][3].\n- **FP4 global KV caching**, used during training with only marginal performance degradation [3].\n- **SWA Bounded Replay**, which approximately reconstructs SWA KV states by replaying only the most recent *n*_win tokens instead of the exact-reconstruction requirement of *L* \u00d7 *n*_win tokens [3].\n- **Single-Pass mHC** with a Mega-mHC deployment kernel that halves activation memory traffic relative to the original four-kernel implementation [3].\n- **Engram** conditional memory module and **DSpark** speculative decoding with semi-autoregressive draft generation and confidence-scheduled verification [3].\n- **Training recipe**: sparse attention trained from scratch at 64K sequence length with no dense-attention warmup, on a 45T-token multimodal corpus [2].\n\n## Efficiency gains\n\n- Global KV cache footprint (always in HBM): **890 bytes per token**, roughly **1/4** of DeepSeek-V4-Flash, and approximately **437-fold** smaller than DeepSeek-V1 [1][4].\n- Persistent KV cache footprint (SSD or host memory): roughly **1/8** of DeepSeek-V4-Flash with SWA Bounded Replay [1][3].\n- Decode FLOPs stay nearly constant across context: extending context 256-fold (4K \u2192 1M) raises single-token Decode FLOPs by only **1/4** [2][3].\n- Kernel count per CSA2 Reuse Mode layer: **15 during prefill and 11 during decode** [2].\n- Parameter efficiency: the base model reaches world-knowledge, reasoning and coding ability comparable to DeepSeek-V4-Pro-Base with **1/3 total parameters and 1/4 activated parameters**, plus 5%\u201310% gains on held-out evaluations [2].\n\nSelected base-model results from Table 1 (activated params 8B/16B; backbone 552B) [6]:\n\n- MMLU-Pro: 74.1\n- HumanEval: 79.4\n- GSM8K: 93.0\n- MATH: 61.1\n- LongBench-V2: 45.2\n- MMMU-Pro: 56.5; DocVQA: 95.6; CVBench: 77.9; RefCOCO-avg: 86.0\n\n**Caveat on the context:** the excerpts are partial \u2014 they include the abstract, introduction-level material, and the base-model evaluation table, but omit the detailed architecture sections (2.1\u20132.2) and most benchmark tables. So the specific mechanics of CED, the CSA2 compression ratios, and the agentic benchmark scores referenced in Figure 1(a) are not available here.",
+    "citations": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf",
+      "/home/kevin/Downloads/DeepSeek_V41_Tech_Report.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.046,
+    "generation_latency_sec": 7.648,
+    "total_latency_sec": 7.694,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 0.875,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 0.875,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  },
+  {
+    "id": "TC-25",
+    "category": "Summarization",
+    "query": "Summarize the main hypothesis and empirical conclusion of the GPT-2 paper regarding unsupervised multitask learning.",
+    "ground_truth": "The GPT-2 paper demonstrates that language models trained on diverse web text (WebText) without explicit supervision learn to perform a wide variety of NLP tasks (reading comprehension, translation, summarization, question answering) in a zero-shot manner without requiring task-specific training datasets or architecture modifications as model capacity scales up to 1.5B parameters.",
+    "generated_answer": "The paper\u2019s main hypothesis is that a large language model trained on a sufficiently large and diverse corpus can begin to learn many NLP tasks without explicit task-specific supervision. The authors argue that single-task training on single-domain datasets contributes to poor generalization, and that high-capacity models trained to maximize likelihood on varied text can perform tasks \u201cwithout the need for explicit supervision\u201d [1][3][4].\n\nEmpirically, the paper concludes that GPT-2, a 1.5B-parameter Transformer, supports this hypothesis through zero-shot task transfer, though performance is uneven:\n\n- GPT-2 achieves state-of-the-art results on 7 out of 8 tested language modeling datasets in a zero-shot setting but still underfits WebText [1].\n- On CoQA, conditioned on a document plus questions, GPT-2 reaches 55 F1, matching or exceeding 3 out of 4 baseline systems without using the 127,000+ training examples [1].\n- Model capacity is essential: increasing capacity improves zero-shot task performance in a log-linear fashion across tasks [1].\n- On reading comprehension, GPT-2 is competitive with supervised baselines zero-shot, but on summarization it is only rudimentary by quantitative metrics, and the authors say zero-shot performance is still far from usable [4].\n\nOverall, the paper presents unsupervised multitask learning as a promising research direction, while cautioning that GPT-2\u2019s zero-shot performance establishes a baseline rather than a practical ceiling or usable general solution [3][4].",
+    "citations": [
+      1,
+      3,
+      4
+    ],
+    "cited_sources": [
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf",
+      "/home/kevin/Downloads/gpt2.pdf"
+    ],
+    "retrieval_chunks": 8,
+    "search_latency_sec": 0.047,
+    "generation_latency_sec": 5.597,
+    "total_latency_sec": 5.644,
+    "metrics": {
+      "hit_rate_at_1": 1.0,
+      "hit_rate_at_3": 1.0,
+      "hit_rate_at_5": 1.0,
+      "hit_rate_at_8": 1.0,
+      "mrr": 1.0,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "faithfulness": 0.8,
+      "answer_relevance": 0.8,
+      "semantic_accuracy": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "tool_math_accuracy": 1.0,
+      "rejection_accuracy": 1.0,
+      "judge_reasoning": ""
+    }
+  }
+]

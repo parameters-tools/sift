@@ -59,6 +59,32 @@ impl MessageFormatter {
         ])]
     }
 
+    pub fn render_user_message_wrapped(
+        text: &str,
+        theme: &Theme,
+        content_width: usize,
+    ) -> Vec<Line<'static>> {
+        let content = text.trim();
+        let prompt_prefix = "> ";
+        let full_text = format!("{prompt_prefix}{content}");
+        let wrapped_strings = Self::wrap_line_with_indent(&full_text, content_width, "  ");
+        let mut lines = Vec::new();
+        for (i, line_str) in wrapped_strings.into_iter().enumerate() {
+            if i == 0 {
+                let rest = line_str.strip_prefix(prompt_prefix).unwrap_or(&line_str);
+                lines.push(Line::from(vec![
+                    Span::styled("> ", theme.style_muted()),
+                    Span::raw(rest.to_string()),
+                ]));
+            } else {
+                lines.push(Line::from(vec![
+                    Span::raw(line_str),
+                ]));
+            }
+        }
+        lines
+    }
+
     pub fn compute_content_width(terminal_width: usize) -> usize {
         (terminal_width.saturating_sub(4)).min(100)
     }

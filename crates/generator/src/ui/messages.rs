@@ -551,16 +551,34 @@ impl MessageFormatter {
 
             let page_str = c.page.map(|p| format!(" · p.{p}")).unwrap_or_default();
             let header = format!("[{}] {}{}", c.rank, c.file, page_str);
+            let max_header_len = width.saturating_sub(4);
+            let display_header = if UnicodeWidthStr::width(header.as_str()) > max_header_len && max_header_len > 4 {
+                let mut truncated = String::new();
+                let mut cur_w = 0;
+                for ch in header.chars() {
+                    let ch_w = unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0);
+                    if cur_w + ch_w + 1 > max_header_len {
+                        truncated.push('…');
+                        break;
+                    }
+                    truncated.push(ch);
+                    cur_w += ch_w;
+                }
+                truncated
+            } else {
+                header
+            };
+
             let mut header_spans = vec![Span::raw("  ")];
             if c.is_cited {
                 header_spans.push(Span::styled("● ", theme.style_accent()));
                 header_spans.push(Span::styled(
-                    header,
+                    display_header,
                     theme.style_accent().add_modifier(Modifier::BOLD),
                 ));
             } else {
                 header_spans.push(Span::styled(
-                    header,
+                    display_header,
                     theme.style_muted().add_modifier(Modifier::BOLD),
                 ));
             }

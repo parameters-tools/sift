@@ -249,6 +249,17 @@ pub fn execute_command(
     conn: &rusqlite::Connection,
     theme: &Theme,
 ) -> CommandOutput {
+    execute_command_with_width(submitted, status, api, conn, theme, 80)
+}
+
+pub fn execute_command_with_width(
+    submitted: &str,
+    status: &mut ShellStatus,
+    api: &mut Option<Api>,
+    conn: &rusqlite::Connection,
+    theme: &Theme,
+    term_width: usize,
+) -> CommandOutput {
     let line = submitted.trim();
     if let Some(cmd_line) = line.strip_prefix('/') {
         let (cmd_name, cmd_arg) = cmd_line.split_once(char::is_whitespace).unwrap_or((cmd_line, ""));
@@ -284,7 +295,8 @@ pub fn execute_command(
             "model" => CommandOutput::Lines(handle_model_subcommand(cmd_arg, status, api, theme)),
             "chunks" => {
                 let lines = if let Some(ref chunks) = status.last_retrieval {
-                    MessageFormatter::render_chunks_inspection(chunks, 80, theme)
+                    let content_width = MessageFormatter::compute_content_width(term_width);
+                    MessageFormatter::render_chunks_inspection(chunks, content_width, theme)
                 } else {
                     vec![Line::from(vec![
                         Span::raw("  "),
@@ -298,7 +310,8 @@ pub fn execute_command(
                     if let Ok(n) = cmd_arg.parse::<usize>() {
                         if n >= 1 && n <= chunks.len() {
                             let chunk = &chunks[n - 1];
-                            MessageFormatter::render_cite_inspection(chunk, 80, theme)
+                            let content_width = MessageFormatter::compute_content_width(term_width);
+                            MessageFormatter::render_cite_inspection(chunk, content_width, theme)
                         } else {
                             vec![Line::from(vec![
                                 Span::raw("  "),
@@ -737,8 +750,17 @@ pub async fn run(db_path: &Path) -> Result<()> {
         // Poll for user keyboard input with short timeout to keep spinner animating
         if event::poll(Duration::from_millis(50))? {
             match event::read()? {
-                Event::Resize(_cols, _rows) => {
-                    terminal.autoresize()?;
+                Event::Resize(cols, rows) => {
+                    let mut final_cols = cols;
+                    let mut final_rows = rows;
+                    while event::poll(Duration::from_millis(10))? {
+                        if let Event::Resize(c, r) = event::read()? {
+                            final_cols = c;
+                            final_rows = r;
+                        }
+                    }
+                    let _ = terminal.resize(Rect::new(0, 0, final_cols, final_rows));
+                    let _ = terminal.clear();
                 }
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
                     // Check Ctrl+C
@@ -889,6 +911,9 @@ pub async fn run(db_path: &Path) -> Result<()> {
                             } else if let Some(submitted) = input.submit() {
                                 menu_dismissed = false;
 
+                                // 0. Derive current terminal width dynamically on submit
+                                let current_width = terminal.size().map(|s| s.width).unwrap_or(80);
+
                                 // 1. Spacing: one blank line between turns
                                 if turns_completed > 0 {
                                     emit(&mut terminal, vec![Line::default()], current_width)?;
@@ -899,7 +924,7 @@ pub async fn run(db_path: &Path) -> Result<()> {
                                 emit(&mut terminal, user_lines, current_width)?;
 
                                 // 3. Execute command via decoupled handler
-                                match execute_command(&submitted, &mut status, &mut api, &conn, &theme) {
+                                match execute_command_with_width(&submitted, &mut status, &mut api, &conn, &theme, current_width as usize) {
                                     CommandOutput::Lines(lines) => {
                                         emit(&mut terminal, lines, current_width)?;
                                         turns_completed += 1;
@@ -1056,7 +1081,10 @@ pub async fn run(db_path: &Path) -> Result<()> {
 }
 
 fn render_input_box(f: &mut ratatui::Frame, area: Rect, input: &mut InputState, theme: &Theme) {
-    let is_compact = area.width < 60;
+    if area.width == 0 || area.height == 0 {
+        return;
+    }
+    let is_compact = area.width < 60 || area.height < 3;
     let block = if is_compact {
         Block::default().borders(Borders::NONE)
     } else {

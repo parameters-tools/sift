@@ -407,4 +407,183 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_ui_resize_handling() {
+        use ratatui::backend::TestBackend;
+        use ratatui::Terminal;
+        use ratatui::layout::{Constraint, Direction, Layout, Rect};
+        use ratatui::widgets::{Block, BorderType, Borders, Clear, Paragraph};
+        use std::path::PathBuf;
+
+        let mut theme = theme::Theme::detect();
+        theme.use_color = true;
+        theme.use_unicode = true;
+        theme.is_tty = true;
+
+        // Initialize terminal at 80x24
+        let backend = TestBackend::new(80, 24);
+        let mut terminal = Terminal::new(backend).unwrap();
+
+        // Helper closure to simulate the draw frame logic
+        let draw_frame = |terminal: &mut Terminal<TestBackend>, input_text: &str| {
+            terminal.draw(|f| {
+                let area = f.area();
+                if area.height == 0 || area.width == 0 {
+                    return;
+                }
+                f.render_widget(Clear, area);
+
+                let term_width = area.width as usize;
+                let is_compact = term_width < 60 || area.height < 3;
+                let input_box_width = if is_compact {
+                    area.width
+                } else {
+                    (area.width.saturating_sub(2)).max(1)
+                };
+
+                let draw_area = Rect {
+                    x: area.x,
+                    y: area.y,
+                    width: input_box_width,
+                    height: area.height,
+                };
+
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([
+                        Constraint::Length(3),
+                        Constraint::Length(1),
+                        Constraint::Min(0),
+                    ])
+                    .split(draw_area);
+
+                let block = if is_compact {
+                    Block::default().borders(Borders::NONE)
+                } else {
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_type(BorderType::Rounded)
+                        .border_style(theme.style_muted())
+                };
+
+                let inner = block.inner(chunks[0]);
+                f.render_widget(block, chunks[0]);
+                f.render_widget(Paragraph::new(input_text), inner);
+
+                let footer = footer::FooterState {
+                    is_busy: false,
+                    ctrl_c_primed: false,
+                    shortcuts_open: false,
+                    sources_count: 5,
+                    chunks_count: 42,
+                    api_reachable: true,
+                };
+                let footer_line = footer.render_ratatui_line(draw_area.width as usize, &theme);
+                f.render_widget(Paragraph::new(footer_line), chunks[1]);
+            }).unwrap();
+        };
+
+        // 1. Initial draw at 80x24
+        draw_frame(&mut terminal, "initial query");
+        assert_eq!(terminal.size().unwrap().width, 80);
+        assert_eq!(terminal.size().unwrap().height, 24);
+
+        // 2. Resize to 120x30 (wider terminal)
+        terminal.backend_mut().resize(120, 30);
+        terminal.resize(Rect::new(0, 0, 120, 30)).unwrap();
+        terminal.clear().unwrap();
+        draw_frame(&mut terminal, "after expanding resize");
+        assert_eq!(terminal.size().unwrap().width, 120);
+        assert_eq!(terminal.size().unwrap().height, 30);
+
+        // Verify buffer width matches new width (120) and input box spans width - 2 (118)
+        let buffer = terminal.backend().buffer();
+        assert_eq!(buffer.area().width, 120);
+        assert_eq!(buffer.area().height, 30);
+        // Col 117 is the right border of the rounded box at width 120
+        assert_ne!(buffer[(117, 1)].symbol(), " ");
+        // Col 118 & 119 are beyond the box width and have no trailing padding
+        assert_eq!(buffer[(118, 1)].symbol(), " ");
+        assert_eq!(buffer[(119, 1)].symbol(), " ");
+
+        // 3. Resize to 50x15 (narrow terminal below 60 cols -> compact mode)
+        terminal.backend_mut().resize(50, 15);
+        terminal.resize(Rect::new(0, 0, 50, 15)).unwrap();
+        terminal.clear().unwrap();
+        draw_frame(&mut terminal, "compact mode query");
+        assert_eq!(terminal.size().unwrap().width, 50);
+        assert_eq!(terminal.size().unwrap().height, 15);
+
+        let buffer = terminal.backend().buffer();
+        assert_eq!(buffer.area().width, 50);
+        // In compact mode, borders are none, so col 0 row 0 is raw text
+        assert_eq!(buffer[(0, 0)].symbol(), "c");
+
+        // 4. Resize to tiny height (80x2) -> compact mode due to height < 3
+        terminal.backend_mut().resize(80, 2);
+        terminal.resize(Rect::new(0, 0, 80, 2)).unwrap();
+        terminal.clear().unwrap();
+        draw_frame(&mut terminal, "tiny height");
+        assert_eq!(terminal.size().unwrap().height, 2);
+
+        // 5. Test execute_command_with_width adapts output formatting on resize
+        let mut status = app::ShellStatus {
+            db_path: PathBuf::from(".rag/test.sqlite"),
+            sources: 2,
+            chunks: 10,
+            chat_model: "test-model".into(),
+            embed_model: "test-embed".into(),
+            api_base: "https://test.api".into(),
+            api_ok: true,
+            last_query_debug: None,
+            last_retrieval: Some(vec![
+                messages::RetrievedChunk {
+                    rank: 1,
+                    file: "long_document_name_for_resize_verification_testing.pdf".into(),
+                    full_path: "/path/to/long_document_name_for_resize_verification_testing.pdf".into(),
+                    page: Some(4),
+                    text: "Retrieval augmented generation systems combine information retrieval with sequence-to-sequence language modeling to answer questions grounded in knowledge.".into(),
+                    score: 0.85,
+                    is_cited: true,
+                },
+            ]),
+        };
+
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+
+        for &width in &[60usize, 80usize, 120usize] {
+            let output = app::execute_command_with_width("/chunks", &mut status, &mut None, &conn, &theme, width);
+            if let app::CommandOutput::Lines(lines) = output {
+                let max_content_w = messages::MessageFormatter::compute_content_width(width);
+                for l in &lines {
+                    assert!(
+                        l.width() <= max_content_w,
+                        "Chunk line width {} exceeds {} at terminal width {}",
+                        l.width(),
+                        max_content_w,
+                        width
+                    );
+                }
+            } else {
+                panic!("Expected CommandOutput::Lines for /chunks");
+            }
+
+            let cite_out = app::execute_command_with_width("/cite 1", &mut status, &mut None, &conn, &theme, width);
+            if let app::CommandOutput::Lines(lines) = cite_out {
+                let max_content_w = messages::MessageFormatter::compute_content_width(width);
+                for l in &lines {
+                    assert!(
+                        l.width() <= max_content_w,
+                        "Cite line width {} exceeds {} at terminal width {}",
+                        l.width(),
+                        max_content_w,
+                        width
+                    );
+                }
+            } else {
+                panic!("Expected CommandOutput::Lines for /cite 1");
+            }
+        }
+    }
 }

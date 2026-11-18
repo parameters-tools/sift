@@ -259,6 +259,144 @@ impl MessageFormatter {
         lines
     }
 
+    pub fn render_agent_steps(
+        user_query: &str,
+        retrieved_query: &str,
+        steps: &[crate::agent::types::AgentStep],
+        theme: &Theme,
+        content_width: usize,
+    ) -> Vec<Line<'static>> {
+        let mut lines = Vec::new();
+
+        for step in steps {
+            match step {
+                crate::agent::types::AgentStep::Plan { goals, .. } => {
+                    let formatted_goals: Vec<String> = goals
+                        .iter()
+                        .enumerate()
+                        .map(|(i, g)| format!("[{}] {g}", i + 1))
+                        .collect();
+                    let plan_text = format!("{} Plan: {}", theme.symbols.bullet, formatted_goals.join(" · "));
+                    let wrapped = Self::wrap_line_with_indent(&plan_text, content_width, "  ");
+                    for (idx, w_line) in wrapped.into_iter().enumerate() {
+                        if idx == 0 {
+                            let prefix = format!("{} Plan:", theme.symbols.bullet);
+                            let mut spans = vec![
+                                Span::styled(format!("{} ", theme.symbols.bullet), theme.style_accent()),
+                                Span::styled("Plan: ", theme.style_bold()),
+                            ];
+                            if let Some(rem) = w_line.strip_prefix(&prefix) {
+                                spans.push(Span::styled(rem.to_string(), theme.style_muted()));
+                            }
+                            lines.push(Line::from(spans));
+                        } else {
+                            lines.push(Line::from(vec![Span::styled(w_line, theme.style_muted())]));
+                        }
+                    }
+                }
+                crate::agent::types::AgentStep::Tool {
+                    name,
+                    args,
+                    detail,
+                    is_weak,
+                    no_strong_match,
+                    ..
+                } => {
+                    if name == "Retrieve" {
+                        let tool_lines = Self::render_retrieve_tool_done_wrapped(
+                            user_query,
+                            if args.is_empty() { retrieved_query } else { args },
+                            detail,
+                            *is_weak,
+                            *no_strong_match,
+                            theme,
+                            content_width,
+                        );
+                        lines.extend(tool_lines);
+                    } else {
+                        let tool_lines = Self::render_tool_done_wrapped(
+                            name,
+                            args,
+                            detail,
+                            theme,
+                            content_width,
+                        );
+                        lines.extend(tool_lines);
+                    }
+                }
+                crate::agent::types::AgentStep::Verification {
+                    is_verified,
+                    detail,
+                    ..
+                } => {
+                    let sub_prefix = format!("  {}  ", theme.symbols.sub_item);
+                    let full_line = format!("{sub_prefix}{detail}");
+                    let style = if *is_verified {
+                        theme.style_success()
+                    } else {
+                        theme.style_warning()
+                    };
+
+                    if UnicodeWidthStr::width(full_line.as_str()) <= content_width {
+                        lines.push(Line::from(vec![
+                            Span::raw("  "),
+                            Span::styled(format!("{}  ", theme.symbols.sub_item), style),
+                            Span::styled(detail.clone(), style),
+                        ]));
+                    } else {
+                        let wrapped = Self::wrap_line_with_indent(&full_line, content_width, "  ");
+                        for (idx, w_line) in wrapped.into_iter().enumerate() {
+                            if idx == 0 {
+                                let rem = w_line.strip_prefix(&sub_prefix).unwrap_or(&w_line);
+                                lines.push(Line::from(vec![
+                                    Span::raw("  "),
+                                    Span::styled(format!("{}  ", theme.symbols.sub_item), style),
+                                    Span::styled(rem.to_string(), style),
+                                ]));
+                            } else {
+                                lines.push(Line::from(vec![Span::styled(w_line, style)]));
+                            }
+                        }
+                    }
+                }
+                crate::agent::types::AgentStep::Clarification {
+                    detail,
+                    ..
+                } => {
+                    let sub_prefix = format!("  {}  ℹ ", theme.symbols.sub_item);
+                    let full_line = format!("{sub_prefix}{detail}");
+                    let style = theme.style_accent();
+
+                    if UnicodeWidthStr::width(full_line.as_str()) <= content_width {
+                        lines.push(Line::from(vec![
+                            Span::raw("  "),
+                            Span::styled(format!("{}  ", theme.symbols.sub_item), style),
+                            Span::styled("ℹ ", theme.style_bold()),
+                            Span::styled(detail.clone(), style),
+                        ]));
+                    } else {
+                        let wrapped = Self::wrap_line_with_indent(&full_line, content_width, "  ");
+                        for (idx, w_line) in wrapped.into_iter().enumerate() {
+                            if idx == 0 {
+                                let rem = w_line.strip_prefix(&sub_prefix).unwrap_or(&w_line);
+                                lines.push(Line::from(vec![
+                                    Span::raw("  "),
+                                    Span::styled(format!("{}  ", theme.symbols.sub_item), style),
+                                    Span::styled("ℹ ", theme.style_bold()),
+                                    Span::styled(rem.to_string(), style),
+                                ]));
+                            } else {
+                                lines.push(Line::from(vec![Span::styled(w_line, style)]));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        lines
+    }
+
     pub fn render_tool_error(tool_name: &str, args: &str, error: &str, theme: &Theme) -> Vec<Line<'static>> {
         let lines_vec: Vec<&str> = error.lines().collect();
         let err_str = if lines_vec.len() > 1 {

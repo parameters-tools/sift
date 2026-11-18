@@ -22,7 +22,7 @@ use ratatui::{
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
-use crate::{api::Api, chunker, db, retrieve, sources};
+use crate::{api::Api, chunker, db, sources};
 use super::{
     commands::{CommandDef, CommandRegistry},
     footer::FooterState,
@@ -69,6 +69,7 @@ pub struct QuerySuccess {
     pub token_count: usize,
     pub is_approx_tokens: bool,
     pub chat_model: String,
+    pub agent_steps: Vec<crate::agent::types::AgentStep>,
 }
 
 pub type QueryResult = Result<QuerySuccess>;
@@ -508,16 +509,27 @@ pub async fn run(db_path: &Path) -> Result<()> {
                             status.last_query_debug =
                                 Some((retrieved_query.clone(), success.sources.clone()));
                             status.last_retrieval = Some(success.retrieved_chunks.clone());
-                            let tool_row = MessageFormatter::render_retrieve_tool_done_wrapped(
-                                &user_query,
-                                &retrieved_query,
-                                &success.tool_detail,
-                                success.is_weak,
-                                success.no_strong_match,
-                                &theme,
-                                content_width,
-                            );
-                            emit(&mut terminal, tool_row, current_width)?;
+                            if success.agent_steps.is_empty() {
+                                let tool_row = MessageFormatter::render_retrieve_tool_done_wrapped(
+                                    &user_query,
+                                    &retrieved_query,
+                                    &success.tool_detail,
+                                    success.is_weak,
+                                    success.no_strong_match,
+                                    &theme,
+                                    content_width,
+                                );
+                                emit(&mut terminal, tool_row, current_width)?;
+                            } else {
+                                let rendered_steps = MessageFormatter::render_agent_steps(
+                                    &user_query,
+                                    &retrieved_query,
+                                    &success.agent_steps,
+                                    &theme,
+                                    content_width,
+                                );
+                                emit(&mut terminal, rendered_steps, current_width)?;
+                            }
 
                             // Blank line between tool row and assistant answer
                             emit(&mut terminal, vec![Line::default()], current_width)?;
@@ -1307,141 +1319,51 @@ async fn handle_query(
         anyhow::bail!("Interrupted by user");
     }
 
-    let conn = db::open(&db_file)?;
-    let chunks = db::all(&conn)?;
-    if chunks.is_empty() {
-        return Ok((
-            QuerySuccess {
-                answer: "The index is empty. Add sources first with /add <path|url>".to_string(),
-                tool_detail: "0 chunks retrieved".to_string(),
-                sources: Vec::new(),
-                retrieved_chunks: Vec::new(),
-                is_weak: true,
-                no_strong_match: true,
-                answer_elapsed: 0.0,
-                token_count: 0,
-                is_approx_tokens: false,
-                chat_model: api.chat_model().to_string(),
-            },
-            retrieved_query,
-        ));
-    }
-
-    // Embed query
-    let query_embs = api.embed(std::slice::from_ref(&retrieved_query)).await?;
-    let query_emb = query_embs.into_iter().next().context("Failed to get query embedding")?;
-
-    if token.is_cancelled() {
-        anyhow::bail!("Interrupted by user");
-    }
-
-    db::ensure_compatible(&chunks, &query_emb)?;
-    let retrieve_start = Instant::now();
-    let initial_hits = retrieve::hybrid(chunks, &retrieved_query, &query_emb, 5);
-    let retrieve_elapsed = retrieve_start.elapsed().as_secs_f64();
-
-    if initial_hits.is_empty() {
-        return Ok((
-            QuerySuccess {
-                answer: "I could not find any relevant information in the indexed documents.".to_string(),
-                tool_detail: MessageFormatter::format_retrieve_detail(0, 0, retrieve_elapsed, 0),
-                sources: Vec::new(),
-                retrieved_chunks: Vec::new(),
-                is_weak: true,
-                no_strong_match: true,
-                answer_elapsed: 0.0,
-                token_count: 0,
-                is_approx_tokens: false,
-                chat_model: api.chat_model().to_string(),
-            },
-            retrieved_query,
-        ));
-    }
-
-    let filter_config = retrieve::RetrievalFilterConfig::default();
-    let filtered = retrieve::filter_by_relevance(initial_hits, &filter_config);
-    let hits = filtered.hits;
-    let filtered_count = filtered.filtered_count;
-    let no_strong_match = filtered.no_strong_match;
-
-    let weak_config = retrieve::WeakRetrievalConfig::default();
-    let is_weak = retrieve::is_weak_retrieval(&hits, &weak_config);
-
-    let mut unique_sources = std::collections::HashSet::new();
-    for h in &hits {
-        unique_sources.insert(h.chunk.source.clone());
-    }
-
-    let detail = MessageFormatter::format_retrieve_detail(
-        hits.len(),
-        unique_sources.len(),
-        retrieve_elapsed,
-        filtered_count,
-    );
-
-    let contexts: Vec<(String, String)> = hits
-        .iter()
-        .map(|h| (h.chunk.source.clone(), h.chunk.text.chars().take(5000).collect()))
-        .collect();
-
-    let mut sources_list = Vec::new();
-    let mut retrieved_chunks = Vec::new();
-    for (i, h) in hits.iter().enumerate() {
-        sources_list.push((i + 1, h.chunk.source.clone(), h.score));
-        let file_name = std::path::Path::new(&h.chunk.source)
-            .file_name()
-            .map(|f| f.to_string_lossy().to_string())
-            .unwrap_or_else(|| h.chunk.source.clone());
-        retrieved_chunks.push(crate::ui::messages::RetrievedChunk {
-            rank: i + 1,
-            file: file_name,
-            full_path: h.chunk.source.clone(),
-            page: None,
-            text: h.chunk.text.clone(),
-            score: h.score,
-            is_cited: false,
-        });
-    }
-
     let tx = ui_channel.clone();
-    let answer_start = Instant::now();
-    let answer_res = api
-        .answer_stream_with_history(
-            &question,
-            &contexts,
-            &history,
-            token.clone(),
-            move |token_str| {
-                let _ = tx.try_send(UiEvent::Token(token_str.to_string()));
-            },
-        )
-        .await?;
-
-    let answer = answer_res.text;
-    let cited_ranks = MessageFormatter::extract_citations(&answer);
-    for chunk in &mut retrieved_chunks {
-        chunk.is_cited = cited_ranks.contains(&chunk.rank);
-    }
-
-    let answer_elapsed = answer_start.elapsed().as_secs_f64();
-    let (token_count, is_approx_tokens) = match answer_res.completion_tokens {
-        Some(tokens) => (tokens, false),
-        None => (crate::ui::messages::MessageFormatter::estimate_tokens(&answer), true),
+    let token_cb = move |token_str: &str| {
+        let _ = tx.try_send(UiEvent::Token(token_str.to_string()));
     };
-    let chat_model = api.chat_model().to_string();
+
+    let output = crate::agent::AgentRunner::run_agent(
+        &question,
+        &retrieved_query,
+        &history,
+        &db_file,
+        &api,
+        &token,
+        token_cb,
+    )
+    .await?;
+
+    let tool_detail = output
+        .steps
+        .iter()
+        .find_map(|s| {
+            if let crate::agent::types::AgentStep::Tool { name, detail, .. } = s {
+                if name == "Retrieve" {
+                    Some(detail.clone())
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default();
 
     Ok((
         QuerySuccess {
-            answer,
-            tool_detail: detail,
-            sources: sources_list,
-            retrieved_chunks,
-            is_weak,
-            no_strong_match,
-            answer_elapsed,
-            token_count,
-            is_approx_tokens,
-            chat_model,
+            answer: output.answer,
+            tool_detail,
+            sources: output.sources_list,
+            retrieved_chunks: output.retrieved_chunks,
+            is_weak: output.is_weak,
+            no_strong_match: output.no_strong_match,
+            answer_elapsed: output.answer_elapsed,
+            token_count: output.token_count,
+            is_approx_tokens: output.is_approx_tokens,
+            chat_model: output.chat_model,
+            agent_steps: output.steps,
         },
         retrieved_query,
     ))

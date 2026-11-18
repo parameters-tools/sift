@@ -750,17 +750,50 @@ pub async fn run(db_path: &Path) -> Result<()> {
         // Poll for user keyboard input with short timeout to keep spinner animating
         if event::poll(Duration::from_millis(50))? {
             match event::read()? {
-                Event::Resize(cols, rows) => {
-                    let mut final_cols = cols;
-                    let mut final_rows = rows;
+                Event::Resize(_cols, _rows) => {
                     while event::poll(Duration::from_millis(10))? {
-                        if let Event::Resize(c, r) = event::read()? {
-                            final_cols = c;
-                            final_rows = r;
-                        }
+                        let _ = event::read();
                     }
-                    let _ = terminal.resize(Rect::new(0, 0, final_cols, final_rows));
-                    let _ = terminal.clear();
+                    let lines: Vec<&str> = input.text.split('\n').collect();
+                    let mut cursor_row = 0;
+                    let mut current_offset = 0;
+                    for (i, line_text) in lines.iter().enumerate() {
+                        let line_len = line_text.chars().count();
+                        if input.cursor >= current_offset && input.cursor <= current_offset + line_len {
+                            cursor_row = i;
+                        }
+                        current_offset += line_len + 1;
+                    }
+
+                    let term_size = terminal.size().unwrap_or(ratatui::layout::Size { width: 80, height: 24 });
+                    let is_compact = term_size.width < 60 || term_size.height < 3;
+                    let border_offset: u16 = if is_compact { 0 } else { 1 };
+                    let spinner_offset: u16 = if is_busy { 1 } else { 0 };
+                    let cursor_offset = border_offset + spinner_offset + cursor_row as u16;
+
+                    if cursor_offset > 0 {
+                        let _ = execute!(
+                            std::io::stdout(),
+                            cursor::MoveUp(cursor_offset),
+                            cursor::MoveToColumn(0),
+                            terminal::Clear(ClearType::FromCursorDown)
+                        );
+                    } else {
+                        let _ = execute!(
+                            std::io::stdout(),
+                            cursor::MoveToColumn(0),
+                            terminal::Clear(ClearType::FromCursorDown)
+                        );
+                    }
+
+                    drop(terminal);
+                    let backend = CrosstermBackend::new(std::io::stdout());
+                    terminal = Terminal::with_options(
+                        backend,
+                        TerminalOptions {
+                            viewport: Viewport::Inline(viewport_height),
+                        },
+                    )?;
                 }
                 Event::Key(key) if key.kind == KeyEventKind::Press => {
                     // Check Ctrl+C
